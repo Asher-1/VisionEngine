@@ -1,0 +1,10 @@
+build
+cmake-build-debug
+cmake-build-release
+data/models
+vs2017
+vs2019
+.idea
+.vscode
+lib/ncnn*
+lib/opencv*

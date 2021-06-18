@@ -1,0 +1,63 @@
+#pragma once
+
+#include <opencv2/core.hpp>
+#include "../common/common.h"
+
+namespace ncnn {
+    class Net;
+};
+
+namespace mirror {
+    class LandMarker {
+    public:
+        explicit LandMarker(FaceLandMarkerType type);
+
+        virtual ~LandMarker();
+
+        int load(const char *root_path, const FaceEigenParams& params);
+
+        int extract(const cv::Mat &img_src, const cv::Rect &face, std::vector<cv::Point2f> &keypoints) const;
+
+        inline FaceLandMarkerType getType() const { return type_; }
+
+    protected:
+        virtual int loadModel(const char *root_path) = 0;
+        virtual int extractKeypoints(const cv::Mat &img_src, const cv::Rect &face,
+                                     std::vector<cv::Point2f> &keypoints) const = 0;
+
+    protected:
+        FaceLandMarkerType type_;
+        ncnn::Net *net_ = nullptr;
+        bool verbose_ = false;
+        bool gpu_mode_ = false;
+        bool initialized_ = false;
+        cv::Size inputSize_ = { 112, 112 };
+    };
+
+    class LandmarkerFactory {
+    public:
+        virtual LandMarker *CreateLandmarker() const = 0;
+
+        virtual ~LandmarkerFactory() = default;
+    };
+
+    class ZQLandMarkerFactory : public LandmarkerFactory {
+    public:
+        ZQLandMarkerFactory() = default;
+
+        LandMarker *CreateLandmarker() const override;
+
+        ~ZQLandMarkerFactory() override = default;
+    };
+
+    class InsightfaceLandMarkerFactory : public LandmarkerFactory {
+    public:
+        InsightfaceLandMarkerFactory() = default;
+
+        LandMarker *CreateLandmarker() const override;
+
+        ~InsightfaceLandMarkerFactory() override = default;
+    };
+
+}
+
