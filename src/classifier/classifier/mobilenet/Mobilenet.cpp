@@ -15,13 +15,29 @@ namespace mirror {
         std::string root_dir = std::string(root_path) + "/classifiers/mobilenet";
         std::string param_file = root_dir + "/mobilenet.param";
         std::string model_file = root_dir + "/mobilenet.bin";
-        if (net_->load_param(param_file.c_str()) == -1 ||
-            net_->load_model(model_file.c_str()) == -1 ||
-            loadLabels(root_dir.c_str()) != 0) {
+        std::string label_file = root_dir + "/label.txt";
+        if (Super::loadModel(param_file.c_str(), model_file.c_str()) != 0 ||
+            Super::loadLabels(label_file.c_str()) != 0) {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
+
         return 0;
     }
+
+#if defined __ANDROID__
+    int Mobilenet::loadModel(AAssetManager *mgr) {
+        std::string root_dir = "models/classifiers/mobilenet";
+        std::string param_file = root_dir + "/mobilenet.param";
+        std::string model_file = root_dir + "/mobilenet.bin";
+        std::string label_file = root_dir + "/label.txt";
+        if (Super::loadModel(mgr, param_file.c_str(), model_file.c_str()) != 0 ||
+            Super::loadLabels(label_file.c_str()) != 0) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+#endif
 
     int Mobilenet::classifyObject(const cv::Mat &img_src, std::vector<ImageInfo> &images) const {
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_src.data, ncnn::Mat::PIXEL_BGR2RGB,
@@ -51,31 +67,6 @@ namespace mirror {
         return 0;
     }
 
-    int Mobilenet::loadLabels(const char *root_path) {
-        std::string label_file = std::string(root_path) + "/label.txt";
-        FILE *fp = fopen(label_file.c_str(), "r");
-        if (!fp) {
-            return ErrorCode::NULL_ERROR;
-        }
-
-        class_names_.clear();
-        while (!feof(fp)) {
-            char str[1024];
-            if (nullptr == fgets(str, 1024, fp)) continue;
-            std::string str_s(str);
-
-            if (str_s.length() > 0) {
-                for (int i = 0; i < str_s.length(); i++) {
-                    if (str_s[i] == ' ') {
-                        std::string strr = str_s.substr(i, str_s.length() - i - 1);
-                        class_names_.push_back(strr);
-                        i = str_s.length();
-                    }
-                }
-            }
-        }
-        return 0;
-    }
 }
 
 

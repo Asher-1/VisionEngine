@@ -1,4 +1,5 @@
-build
+build*
+install/*
 cmake-build-debug
 cmake-build-release
 data/models

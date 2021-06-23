@@ -10,18 +10,29 @@ namespace ncnn {
 namespace mirror {
     class LandMarker {
     public:
+        using Super = LandMarker;
         explicit LandMarker(FaceLandMarkerType type);
 
         virtual ~LandMarker();
 
-        int load(const char *root_path, const FaceEigenParams& params);
+        int load(const FaceEigenParams &params);
+        int update(const FaceEigenParams &params);
 
         int extract(const cv::Mat &img_src, const cv::Rect &face, std::vector<cv::Point2f> &keypoints) const;
 
         inline FaceLandMarkerType getType() const { return type_; }
 
     protected:
+
+#if defined __ANDROID__
+        virtual int loadModel(AAssetManager* mgr) { return -1; };
+        int loadModel(AAssetManager* mgr, const char* params, const char* models);
+#endif
+
+        int loadModel(const char *params, const char *models);
+
         virtual int loadModel(const char *root_path) = 0;
+
         virtual int extractKeypoints(const cv::Mat &img_src, const cv::Rect &face,
                                      std::vector<cv::Point2f> &keypoints) const = 0;
 
@@ -31,7 +42,7 @@ namespace mirror {
         bool verbose_ = false;
         bool gpu_mode_ = false;
         bool initialized_ = false;
-        cv::Size inputSize_ = { 112, 112 };
+        cv::Size inputSize_ = {112, 112};
     };
 
     class LandmarkerFactory {

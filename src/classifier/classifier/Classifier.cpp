@@ -27,7 +27,53 @@ namespace mirror {
         }
     }
 
-    int Classifier::load(const char *root_path, const ClassifierEigenParams &params) {
+    int Classifier::loadModel(const char *params, const char *models) {
+        if (net_->load_param(params) == -1 ||
+            net_->load_model(models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+
+#if defined __ANDROID__
+    int Classifier::loadModel(AAssetManager* mgr, const char* params, const char* models)
+    {
+        if (net_->load_param(mgr, params) == -1 ||
+            net_->load_model(mgr, models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+#endif
+
+    int Classifier::loadLabels(const char *label_path) {
+        FILE *fp = fopen(label_path, "r");
+        if (!fp) {
+            return ErrorCode::NULL_ERROR;
+        }
+
+        class_names_.clear();
+        while (!feof(fp)) {
+            char str[1024];
+            if (nullptr == fgets(str, 1024, fp)) continue;
+            std::string str_s(str);
+
+            if (str_s.length() > 0) {
+                for (int i = 0; i < str_s.length(); i++) {
+                    if (str_s[i] == ' ') {
+                        std::string strr = str_s.substr(i, str_s.length() - i - 1);
+                        class_names_.push_back(strr);
+                        i = str_s.length();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    int Classifier::load(const ClassifierEigenParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
         if (params.topK > 0) {
@@ -58,7 +104,7 @@ namespace mirror {
 #endif // NCNN_VULKAN
 
         this->net_->opt.num_threads = num_threads;
-        int flag = this->loadModel(root_path);
+        int flag = this->loadModel(params.model_path.c_str());
         if (flag != 0) {
             initialized_ = false;
             std::cout << "load classifier model: " <<
@@ -69,6 +115,20 @@ namespace mirror {
                 std::cout << "end load classifier model." << std::endl;
             }
         }
+        return flag;
+    }
+
+    int Classifier::update(const ClassifierEigenParams &params) {
+        verbose_ = params.verbose;
+        int flag = 0;
+        if (this->gpu_mode_ != params.gpuEnabled) {
+            flag = load(params);
+        }
+
+        if (params.topK > 0) {
+            topk_ = params.topK;
+        }
+
         return flag;
     }
 

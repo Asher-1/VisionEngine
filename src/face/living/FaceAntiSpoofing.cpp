@@ -35,7 +35,7 @@ namespace mirror {
         nets_.clear();
     }
 
-    int FaceAntiSpoofing::load(const char *root_path, const FaceEigenParams &params) {
+    int FaceAntiSpoofing::load(const FaceEigenParams &params) {
         verbose_ = params.verbose;
         // update if given
         if (params.livingThreshold > 0) {
@@ -54,8 +54,8 @@ namespace mirror {
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
         int num_threads = max_thread_num;
-        if (params.thread_num > 0 && params.thread_num < max_thread_num) {
-            num_threads = params.thread_num;
+        if (params.threadNum > 0 && params.threadNum < max_thread_num) {
+            num_threads = params.threadNum;
         }
         ncnn::set_omp_num_threads(num_threads);
 
@@ -76,7 +76,11 @@ namespace mirror {
 
         if (nets_.empty()) return ErrorCode::NULL_ERROR;
 
-        int flag = this->loadModel(root_path);
+#if defined __ANDROID__
+        int flag = this->loadModel(params.mgr);
+#else
+        int flag = this->loadModel(params.modelPath.c_str());
+#endif
         if (flag != 0) {
             initialized_ = false;
             std::cout << "load face anti spoofing model: "
@@ -90,7 +94,21 @@ namespace mirror {
         return flag;
     }
 
-    bool FaceAntiSpoofing::detect(const cv::Mat &src, const cv::Rect &box, float& livingScore) const {
+    int FaceAntiSpoofing::update(const FaceEigenParams &params) {
+        verbose_ = params.verbose;
+        int flag = 0;
+        if (this->gpu_mode_ != params.gpuEnabled) {
+            flag = load(params);
+        }
+
+        // update if given
+        if (params.livingThreshold > 0) {
+            faceLivingThreshold_ = params.livingThreshold;
+        }
+        return flag;
+    }
+
+    bool FaceAntiSpoofing::detect(const cv::Mat &src, const cv::Rect &box, float &livingScore) const {
         if (!initialized_) {
             std::cout << "face anti spoofing model: "
                       << GetAntiSpoofingTypeName(this->type_)

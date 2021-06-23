@@ -30,7 +30,7 @@ namespace mirror {
 
             }
 
-            std::cout << "FaceDatabase Loaded " << num_faces << " faces" << std::endl;
+            std::cout << "FaceDatabase Saved " << num_faces << " faces" << std::endl;
             return true;
         }
 
@@ -65,9 +65,15 @@ namespace mirror {
 
 
         int64_t Insert(const std::string &name, const std::vector<float> &feat) {
-            int64_t new_index = max_index_++;
+            int64_t new_index = max_index_;
+            if (db_.find(name) == db_.end()) {
+                ++max_index_;
+                db_.insert(std::make_pair(name, feat));
+            } else {
+                db_[name] = feat;
+                std::cout << "update " << name << "face feature" << std::endl;
+            }
             std::cout << "new index is: " << new_index << std::endl;
-            db_.insert(std::make_pair(name, feat));
             return new_index;
         }
 
@@ -83,6 +89,7 @@ namespace mirror {
         void Clear() {
             db_.clear();
             max_index_ = 0;
+            std::cout << "Clear face database successfully." << std::endl;
         }
 
         static float CalculateSimilarity(const std::vector<float> &feat1, const std::vector<float> &feat2) {

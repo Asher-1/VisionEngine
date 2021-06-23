@@ -11,17 +11,28 @@ namespace ncnn {
 namespace mirror {
     class ObjectDetector {
     public:
+        using Super = ObjectDetector;
+
         explicit ObjectDetector(ObjectDetectorType type);
 
         virtual ~ObjectDetector();
 
-        int load(const char *root_path, const ObjectEigenParams &params);
+        int load(const ObjectEigenParams &params);
+        int update(const ObjectEigenParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const;
 
         inline ObjectDetectorType getType() const { return type_; }
 
     protected:
+
+        int loadModel(const char *params, const char *models);
+
+#if defined __ANDROID__
+        virtual int loadModel(AAssetManager* mgr) { return -1; };
+        int loadModel(AAssetManager* mgr, const char* params, const char* models);
+#endif
+
         virtual int loadModel(const char *root_path) = 0;
 
         virtual int detectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const = 0;

@@ -13,21 +13,32 @@ namespace mirror {
 
     class Detector {
     public:
+        using Super = Detector;
+
         explicit Detector(FaceDetectorType type);
 
         virtual ~Detector();
 
     public:
-        int load(const char *root_path, const FaceEigenParams& params);
+        int load(const FaceEigenParams &params);
+        int update(const FaceEigenParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const;
 
         inline FaceDetectorType getType() const { return type_; }
 
     protected:
+        int loadModel(const char *params, const char *models);
+
+#if defined __ANDROID__
+        virtual int loadModel(AAssetManager* mgr) { return -1; };
+        int loadModel(AAssetManager* mgr, const char* params, const char* models);
+#endif
+
         virtual int loadModel(const char *root_path) = 0;
 
         virtual int detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const = 0;
+
 
     protected:
         FaceDetectorType type_;
@@ -40,18 +51,18 @@ namespace mirror {
         float scoreThreshold_ = 0.5f;
     };
 
-// 工厂基类
     class DetectorFactory {
     public:
         virtual ~DetectorFactory() = default;
+
         virtual Detector *CreateDetector() const = 0;
 
     };
 
-// 不同人脸检测器
     class CenterfaceFactory : public DetectorFactory {
     public:
         CenterfaceFactory() = default;
+
         ~CenterfaceFactory() override = default;
 
         Detector *CreateDetector() const override;
@@ -60,6 +71,7 @@ namespace mirror {
     class MtcnnFactory : public DetectorFactory {
     public:
         MtcnnFactory() = default;
+
         ~MtcnnFactory() override = default;
 
         Detector *CreateDetector() const override;

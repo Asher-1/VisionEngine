@@ -10,7 +10,12 @@ namespace mirror {
         ~LiveDetector() override = default;
 
     protected:
-        int loadModel(const char* root_path) override;
+        int loadModel(const char *root_path) override;
+
+#if defined __ANDROID__
+        int loadModel(AAssetManager* mgr) override;
+#endif
+
         float detectLiving(const cv::Mat &src, const cv::Rect &box) const override;
 
     private:

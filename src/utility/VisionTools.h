@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "../common/common.h"
+#include "common.h"
 
 namespace utility {
     int DrawClassifications(cv::Mat &img_src, const std::vector<mirror::ImageInfo> &images,
@@ -29,4 +29,17 @@ namespace utility {
     int DrawKeyPoints(cv::Mat &img_src, const std::vector<cv::Point2f> &keyPoints,
                       int radius = 2, const cv::Scalar &color = cv::Scalar(0, 255, 255),
                       int thickness = -1);
+
+    /**
+     * @param img_src Input image mat.
+     * @param text Input text string.
+     * @param orientation text corner position optional items {0: top left, 1: top right, 2, bottom left, 3, bottom right}.
+     * @param fontScale Font scale factor that is multiplied by the font-specific base size.
+     * @param thickness Thickness of lines used to render the text. See #putText for details.
+     * @param[out] The text corner position.
+     * @return The status flag.
+     *
+     * */
+    int GetTextCornerPosition(const cv::Mat &img_src, const char *text, int orientation,
+                              double fontScale, int thickness, cv::Point2i& position);
 }

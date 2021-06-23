@@ -29,7 +29,29 @@ namespace mirror {
         }
     }
 
-    int ObjectDetector::load(const char *root_path, const ObjectEigenParams &params) {
+
+    int ObjectDetector::loadModel(const char *params, const char *models) {
+        if (net_->load_param(params) == -1 ||
+            net_->load_model(models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+
+#if defined __ANDROID__
+    int ObjectDetector::loadModel(AAssetManager* mgr, const char* params, const char* models)
+    {
+        if (net_->load_param(mgr, params) == -1 ||
+            net_->load_model(mgr, models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+#endif
+
+    int ObjectDetector::load(const ObjectEigenParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
         // update if given
@@ -65,7 +87,7 @@ namespace mirror {
 #endif // NCNN_VULKAN
 
         this->net_->opt.num_threads = num_threads;
-        int flag = this->loadModel(root_path);
+        int flag = this->loadModel(params.model_path.c_str());
         if (flag != 0) {
             initialized_ = false;
             std::cout << "load object detector model: " <<
@@ -78,6 +100,25 @@ namespace mirror {
         }
         return flag;
     }
+
+    int ObjectDetector::update(const ObjectEigenParams &params) {
+        verbose_ = params.verbose;
+        int flag = 0;
+        if (this->gpu_mode_ != params.gpuEnabled) {
+            flag = load(params);
+        }
+
+        // update if given
+        if (params.nmsThreshold > 0) {
+            nmsThreshold_ = params.nmsThreshold;
+        }
+        // update if given
+        if (params.scoreThreshold > 0) {
+            scoreThreshold_ = params.scoreThreshold;
+        }
+        return flag;
+    }
+
 
     int ObjectDetector::detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
         objects.clear();

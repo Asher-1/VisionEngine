@@ -98,10 +98,15 @@ namespace mirror {
                         detector_ = RetinafaceFactory().CreateDetector();
                 }
 
-                if (!detector_ || detector_->load(root_path_.c_str(), params) != 0) {
+                if (!detector_ || detector_->load(params) != 0) {
                     std::cout << "load face detector failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
+            }
+
+            if (detector_->update(params) != 0) {
+                std::cout << "update face detector model failed." << std::endl;
+                return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
             return 0;
@@ -121,10 +126,15 @@ namespace mirror {
                         recognizer_ = MobilefacenetRecognizerFactory().CreateRecognizer();
                 }
 
-                if (!recognizer_ || recognizer_->load(root_path_.c_str(), params) != 0) {
+                if (!recognizer_ || recognizer_->load(params) != 0) {
                     std::cout << "load face recognizer failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
+            }
+
+            if (recognizer_->update(params) != 0) {
+                std::cout << "update face recognizer model failed." << std::endl;
+                return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
             return 0;
@@ -145,10 +155,15 @@ namespace mirror {
                         faceAntiSpoofing_ = LiveDetectorFactory().CreateFaceAntiSpoofing();
                 }
 
-                if (!faceAntiSpoofing_ || faceAntiSpoofing_->load(root_path_.c_str(), params) != 0) {
+                if (!faceAntiSpoofing_ || faceAntiSpoofing_->load(params) != 0) {
                     std::cout << "load face anti spoofing model failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
+            }
+
+            if (faceAntiSpoofing_->update(params) != 0) {
+                std::cout << "update face anti spoofing model failed." << std::endl;
+                return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
             return 0;
@@ -172,22 +187,33 @@ namespace mirror {
                         landmarker_ = InsightfaceLandMarkerFactory().CreateLandmarker();
                 }
 
-                if (!landmarker_ || landmarker_->load(root_path_.c_str(), params) != 0) {
+                if (!landmarker_ || landmarker_->load(params) != 0) {
                     std::cout << "load face landmarker failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
+            }
+
+            if (landmarker_->update(params) != 0) {
+                std::cout << "update face landmarker model failed." << std::endl;
+                return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
             return 0;
 
         }
 
-        int LoadModel(const char *root_path, const FaceEigenParams &params) {
-            root_path_ = root_path;
+        int LoadModel(const FaceEigenParams &params) {
+            if (params.faceFeaturePath.empty()) {
+                db_name_ = std::string(params.modelPath);
+            } else {
+                db_name_ = params.faceFeaturePath;
+            }
+
             int errorCode = 0;
             if (params.faceDetectorEnabled) {
                 if ((errorCode = initFaceDetector(params)) != 0) {
                     destroyFaceDetector();
+                    initialized_ = false;
                     return errorCode;
                 }
             } else {
@@ -197,6 +223,7 @@ namespace mirror {
             if (params.faceRecognizerEnabled) {
                 if ((errorCode = initFaceRecognizer(params)) != 0) {
                     destroyFaceRecognizer();
+                    initialized_ = false;
                     return errorCode;
                 }
             } else {
@@ -206,6 +233,7 @@ namespace mirror {
             if (params.faceAntiSpoofingEnabled) {
                 if ((errorCode = initFaceAntiSpoofing(params)) != 0) {
                     destroyFaceAntiSpoofing();
+                    initialized_ = false;
                     return errorCode;
                 }
             } else {
@@ -215,13 +243,13 @@ namespace mirror {
             if (params.faceLandMarkerEnabled) {
                 if ((errorCode = initFaceLandMarker(params)) != 0) {
                     destroyFaceLandMarker();
+                    initialized_ = false;
                     return errorCode;
                 }
             } else {
                 destroyFaceLandMarker();
             }
 
-            db_name_ = std::string(root_path);
             initialized_ = true;
 
             return 0;
@@ -235,7 +263,7 @@ namespace mirror {
             return tracker_->track(curr_faces, faces);
         }
 
-        inline bool DetectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float& livingScore) {
+        inline bool DetectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float &livingScore) {
             if (!initialized_ || !faceAntiSpoofing_) {
                 std::cout << "face anti spoofing model uninitialized!" << std::endl;
                 return true;
@@ -282,7 +310,7 @@ namespace mirror {
                 std::cout << "face database model uninitialized!" << std::endl;
                 return ErrorCode::UNINITIALIZED_ERROR;
             }
-            return database_->Insert(feat, name);
+            return static_cast<int>(database_->Insert(feat, name));
         }
 
         inline int Delete(const std::string &name) {
@@ -328,7 +356,6 @@ namespace mirror {
 
     private:
         bool initialized_;
-        std::string root_path_;
         std::string db_name_;
         FaceAntiSpoofing *faceAntiSpoofing_ = nullptr;
         Detector *detector_ = nullptr;
@@ -376,8 +403,8 @@ namespace mirror {
         }
     }
 
-    int FaceEngine::loadModel(const char *root_path, const FaceEigenParams &params) {
-        return impl_->LoadModel(root_path, params);
+    int FaceEngine::loadModel(const FaceEigenParams &params) {
+        return impl_->LoadModel(params);
     }
 
     int FaceEngine::track(const std::vector<FaceInfo> &curr_faces,
@@ -385,7 +412,7 @@ namespace mirror {
         return impl_->Track(curr_faces, faces);
     }
 
-    bool FaceEngine::detectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float& livingScore) const {
+    bool FaceEngine::detectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float &livingScore) const {
         return impl_->DetectLivingFace(img_src, box, livingScore);
     }
 

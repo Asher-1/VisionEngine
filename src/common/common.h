@@ -6,10 +6,13 @@
 #include <opencv2/imgproc.hpp>
 
 #if defined(_OPENMP)
-
 #include <omp.h>
-
 #endif
+
+#if defined(__ANDROID__)
+#include <android/asset_manager.h>
+#endif
+
 
 namespace mirror {
 #define kFaceFeatureDim 128
@@ -22,7 +25,8 @@ namespace mirror {
         const int EMPTY_INPUT_ERROR = 10001;
         const int UNINITIALIZED_ERROR = 10002;
         const int MODEL_LOAD_ERROR = 10003;
-        const int DIMENSION_MISS_MATCH_ERROR = 10004;
+        const int MODEL_UPDATE_ERROR = 10004;
+        const int DIMENSION_MISS_MATCH_ERROR = 10005;
     }
 
 
@@ -43,7 +47,11 @@ namespace mirror {
         bool verbose = false;
         bool thread_num = -1;
         bool gpuEnabled = false;
+        std::string model_path;
         ClassifierType classifierType = ClassifierType::MOBILE_NET;
+#if defined __ANDROID__
+        AAssetManager* mgr = nullptr;
+#endif
     };
 
     // for object module
@@ -61,12 +69,16 @@ namespace mirror {
     };
 
     struct ObjectEigenParams {
+        std::string model_path;
         bool gpuEnabled = false;
         bool thread_num = -1;
         bool verbose = false;
         float nmsThreshold = -1.0f;
         float scoreThreshold = -1.0f;
         ObjectDetectorType objectDetectorType = ObjectDetectorType::MOBILENET_SSD;
+#if defined __ANDROID__
+        AAssetManager* mgr = nullptr;
+#endif
     };
 
     // for face module
@@ -109,9 +121,11 @@ namespace mirror {
     };
 
     struct FaceEigenParams {
+        std::string modelPath;
+        std::string faceFeaturePath;
         bool gpuEnabled = false;
         bool verbose = false;
-        bool thread_num = -1;
+        bool threadNum = -1;
         float nmsThreshold = -1.0f;
         float scoreThreshold = -1.0f;
         float livingThreshold = -1.0f;
@@ -123,6 +137,9 @@ namespace mirror {
         FaceLandMarkerType faceLandMarkerType = FaceLandMarkerType::INSIGHTFACE_LANDMARKER;
         FaceDetectorType faceDetectorType = FaceDetectorType::RETINA_FACE;
         FaceRecognizerType faceRecognizerType = FaceRecognizerType::ARC_FACE;
+#if defined __ANDROID__
+        AAssetManager* mgr = nullptr;
+#endif
     };
 
     std::string GetAntiSpoofingTypeName(FaceAntiSpoofingType type);

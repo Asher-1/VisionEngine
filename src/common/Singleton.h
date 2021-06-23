@@ -2,8 +2,7 @@
 // Created by yons on 2021/6/15.
 //
 
-#ifndef VISIONENGINE_SINGLETON_H
-#define VISIONENGINE_SINGLETON_H
+#pragma once
 
 namespace mirror {
     //! Generic singleton encapsulation structure
@@ -27,5 +26,3 @@ namespace mirror {
     };
 
 }
-
-#endif //VISIONENGINE_SINGLETON_H

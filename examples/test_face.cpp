@@ -9,78 +9,19 @@
 using namespace mirror;
 
 static const bool use_gpu = false;
-
-int TestLiving(int argc, char *argv[]) {
-    std::cout << "Face Living Test......" << std::endl;
-    const char *img_file = "../../data/images/mask3.jpg";
-    cv::Mat img_src = cv::imread(img_file);
-    const char *root_path = "../../data/models";
-
-    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
-    params.gpuEnabled = use_gpu;
-    params.livingThreshold = 0.9;
-    params.faceAntiSpoofingEnabled = true;
-    params.faceRecognizerEnabled = false;
-    face_engine->loadModel(root_path, params);
-
-    double start = static_cast<double>(cv::getTickCount());
-
-    std::vector<FaceInfo> faces;
-    face_engine->detectFace(img_src, faces);
-
-    double end = static_cast<double>(cv::getTickCount());
-    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
-    std::cout << "time cost: " << time_cost << "ms" << std::endl;
-
-    int num_face = static_cast<int>(faces.size());
-    for (int i = 0; i < num_face; ++i) {
-        float livingScore;
-        bool is_living = face_engine->detectLivingFace(img_src, faces[i].location_, livingScore);
-        char text[256];
-        cv::Scalar color;
-        if (is_living) {
-            color = cv::Scalar(0, 255, 0);
-            cv::rectangle(img_src, faces[i].location_, color, 2);
-            sprintf(text, "%s %.1f%%", "living", livingScore * 100);
-        } else {
-            color = cv::Scalar(0, 0, 255);
-            cv::rectangle(img_src, faces[i].location_, color, 2);
-            sprintf(text, "%s %.1f%%", "anti living", livingScore * 100);
-        }
-        int baseLine = 0;
-        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX,
-                                              0.5, 1, &baseLine);
-        int x = faces[i].location_.x;
-        int y = faces[i].location_.y - baseLine;
-        cv::putText(img_src, text, cv::Point(x, y),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.5, color, 1);
-
-    }
-    cv::imwrite("../../data/images/mask_result.jpg", img_src);
-
-#if MIRROR_BUILD_WITH_FULL_OPENCV
-    cv::imshow("result", img_src);
-    cv::waitKey(0);
-#else
-    std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
-#endif
-
-    face_engine->destroyEngine();
-    return 0;
-}
+static const char *model_path = "../../data/models";
 
 int TestLandmark(int argc, char *argv[]) {
     std::cout << "Face LandMark Test......" << std::endl;
     const char *img_file = "../../data/images/4.jpg";
     cv::Mat img_src = cv::imread(img_file);
-    const char *root_path = "../../data/models";
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceLandMarkerEnabled = true;
-    face_engine->loadModel(root_path, params);
+    face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
@@ -117,12 +58,12 @@ int TestRecognize(int argc, char *argv[]) {
     std::cout << "Face Recognition Test......" << std::endl;
     const char *img_file = "../../data/images/4.jpg";
     cv::Mat img_src = cv::imread(img_file);
-    const char *root_path = "../../data/models";
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-    face_engine->loadModel(root_path, params);
+    face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
@@ -158,15 +99,15 @@ int TestAlignFace(int argc, char *argv[]) {
     std::cout << "Face Alignment Test......" << std::endl;
     const char *img_file = "../../data/images/4.jpg";
     cv::Mat img_src = cv::imread(img_file);
-    const char *root_path = "../../data/models";
 
     const bool use_landmark = false;
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceLandMarkerEnabled = use_landmark;
-    face_engine->loadModel(root_path, params);
+    face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
@@ -209,12 +150,12 @@ int TestDetector(int argc, char **argv) {
 
     const char *img_file = "../../data/images/4.jpg";
     cv::Mat img_src = cv::imread(img_file);
-    const char *root_path = "../../data/models";
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-    face_engine->loadModel(root_path, params);
+    face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
@@ -240,56 +181,6 @@ int TestDetector(int argc, char **argv) {
     return 0;
 }
 
-int TestTrack(int argc, char *argv[]) {
-    std::cout << "Face Track Test......" << std::endl;
-    const char *img_file = "../../data/images/4.jpg";
-
-#if MIRROR_BUILD_WITH_FULL_OPENCV
-    cv::Mat img_src = cv::imread(img_file);
-    cv::VideoCapture cam(0);
-    if (!cam.isOpened()) {
-        std::cout << "open camera failed." << std::endl;
-        return -1;
-    }
-
-    const char *root_path = "../../data/models";
-    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
-    params.gpuEnabled = use_gpu;
-    face_engine->loadModel(root_path, params);
-
-    cv::Mat frame;
-    while (true) {
-        cam >> frame;
-        if (frame.empty()) {
-            continue;
-        }
-        std::vector<FaceInfo> curr_faces;
-        face_engine->detectFace(frame, curr_faces);
-        std::vector<TrackedFaceInfo> faces;
-        face_engine->track(curr_faces, faces);
-
-        for (int i = 0; i < static_cast<int>(faces.size()); ++i) {
-            TrackedFaceInfo tracked_face_info = faces.at(i);
-            cv::rectangle(frame, tracked_face_info.face_info_.location_,
-                          cv::Scalar(0, 255, 0), 2);
-        }
-
-
-        cv::imshow("result", frame);
-        if (cv::waitKey(60) == 'q') {
-            break;
-        }
-    }
-
-    face_engine->destroyEngine();
-#else
-    std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
-#endif
-
-    return 0;
-}
-
 int TestDatabase(int argc, char *argv[]) {
     std::cout << "Face Database Test......" << std::endl;
     const char *img_path = "../../data/images/4.jpg";
@@ -299,12 +190,13 @@ int TestDatabase(int argc, char *argv[]) {
         return 10001;
     }
 
-    const char *root_path = "../../data/models";
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-    face_engine->loadModel(root_path, params);
+    face_engine->loadModel(params);
     face_engine->Load();
+    face_engine->Clear();
     std::vector<FaceInfo> faces;
     face_engine->detectFace(img_src, faces);
 
@@ -340,13 +232,13 @@ int TestMask(int argc, char *argv[]) {
     std::cout << "Face Mask Test......" << std::endl;
     const char *img_file = "../../data/images/mask3.jpg";
     cv::Mat img_src = cv::imread(img_file);
-    const char *root_path = "../../data/models";
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceDetectorType = FaceDetectorType::ANTICOV_FACE;
-    face_engine->loadModel(root_path, params);
+    face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
@@ -359,11 +251,15 @@ int TestMask(int argc, char *argv[]) {
 
     int num_face = static_cast<int>(faces.size());
     for (int i = 0; i < num_face; ++i) {
+        char text[256];
         if (faces[i].mask_) {
+            sprintf(text, "%s %.1f%%", "mask", faces[i].score_ * 100);
             cv::rectangle(img_src, faces[i].location_, cv::Scalar(0, 255, 0), 2);
         } else {
+            sprintf(text, "%s %.1f%%", "no mask", faces[i].score_ * 100);
             cv::rectangle(img_src, faces[i].location_, cv::Scalar(0, 0, 255), 2);
         }
+        utility::DrawText(img_src, faces[i].location_.tl(), text);
     }
     cv::imwrite("../../data/images/mask_result.jpg", img_src);
 
@@ -378,14 +274,108 @@ int TestMask(int argc, char *argv[]) {
     return 0;
 }
 
+int TestTrack(int argc, char *argv[]) {
+    std::cout << "Face Track Test......" << std::endl;
+
+#if MIRROR_BUILD_WITH_FULL_OPENCV
+    cv::VideoCapture cam(0);
+    if (!cam.isOpened()) {
+        std::cout << "open camera failed." << std::endl;
+        return -1;
+    }
+
+    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
+    FaceEigenParams params;
+    params.modelPath = model_path;
+    params.gpuEnabled = use_gpu;
+    params.livingThreshold = 0.95;
+//    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
+    params.faceAntiSpoofingEnabled = true;
+    params.faceRecognizerEnabled = false;
+    face_engine->loadModel(params);
+
+    cv::Mat frame;
+    while (true) {
+        cam >> frame;
+        if (frame.empty()) {
+            continue;
+        }
+
+        double start = static_cast<double>(cv::getTickCount());
+
+        // detect faces
+        std::vector<FaceInfo> curr_faces;
+        face_engine->detectFace(frame, curr_faces);
+
+        // track faces
+        std::vector<TrackedFaceInfo> faces;
+        face_engine->track(curr_faces, faces);
+
+        // anti face detect
+        for (int i = 0; i < static_cast<int>(faces.size()); ++i) {
+            TrackedFaceInfo tracked_face_info = faces.at(i);
+            cv::Rect roi = tracked_face_info.face_info_.location_;
+            float livingScore;
+            bool is_living = face_engine->detectLivingFace(frame, roi, livingScore);
+            cv::rectangle(frame, tracked_face_info.face_info_.location_,
+                          cv::Scalar(0, 255, 0), 2);
+            char text[256];
+            cv::Scalar color;
+            if (is_living) {
+                color = cv::Scalar(0, 255, 0);
+                sprintf(text, "%s %.1f%%", "living", livingScore * 100);
+            } else {
+                color = cv::Scalar(0, 0, 255);
+                sprintf(text, "%s %.1f%%", "anti living", livingScore * 100);
+            }
+            cv::rectangle(frame, roi, color, 2);
+            int new_y = utility::DrawText(frame, roi.tl(), text);
+
+            sprintf(text, "%s", "tracking");
+            utility::DrawText(frame, cv::Point2i(roi.tl().x, new_y), text);
+        }
+
+        double end = static_cast<double>(cv::getTickCount());
+        double time_cost = (end - start) / cv::getTickFrequency();
+        char text[32];
+        sprintf(text, "FPS=%.2f", 1 / time_cost);
+
+        int thickness = 1;
+        float fontScale = 0.5;
+        int orientation = 1; // top right
+        cv::Point2i position;
+        utility::GetTextCornerPosition(frame, text, orientation, fontScale, thickness, position);
+        utility::DrawText(frame, position, text, fontScale, thickness);
+
+        cv::imshow("result", frame);
+
+        // If press space bar(32), then pause video, until any key is pressed, then restart
+        if (cv::waitKey(60) == ' ') {
+            cv::waitKey(-1);
+        }
+        if (cv::waitKey(60) == 'q' || cv::waitKey(60) == 27) {
+            // press q or esc to quit,  113 is q, 27 is esc
+            cv::destroyAllWindows();
+            break;
+        }
+    }
+
+    face_engine->destroyEngine();
+#else
+    std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
+#endif
+
+    return 0;
+}
+
+
 int main(int argc, char *argv[]) {
-    TestLiving(argc, argv);
     TestLandmark(argc, argv);
     TestRecognize(argc, argv);
     TestAlignFace(argc, argv);
     TestDetector(argc, argv);
-    TestTrack(argc, argv);
     TestDatabase(argc, argv);
     TestMask(argc, argv);
+    TestTrack(argc, argv);
     return 0;
 }

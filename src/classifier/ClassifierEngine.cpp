@@ -26,7 +26,7 @@ namespace mirror {
             }
         }
 
-        int LoadModel(const char *root_path, const ClassifierEigenParams &params) {
+        int LoadModel(const ClassifierEigenParams &params) {
             if (classifier_ && classifier_->getType() != params.classifierType) {
                 destroyClassifier();
             }
@@ -38,10 +38,17 @@ namespace mirror {
                         break;
                 }
 
-                if (!classifier_ || classifier_->load(root_path, params) != 0) {
+                if (!classifier_ || classifier_->load(params) != 0) {
                     std::cout << "load object classifier failed." << std::endl;
+                    initialized_ = false;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
+            }
+
+            if (classifier_->update(params) != 0) {
+                std::cout << "update object classifier model failed." << std::endl;
+                initialized_ = false;
+                return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
             initialized_ = true;
@@ -98,8 +105,8 @@ namespace mirror {
         }
     }
 
-    int ClassifierEngine::loadModel(const char *root_path, const ClassifierEigenParams &params) {
-        return impl_->LoadModel(root_path, params);
+    int ClassifierEngine::loadModel(const ClassifierEigenParams &params) {
+        return impl_->LoadModel(params);
     }
 
     int ClassifierEngine::classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const {

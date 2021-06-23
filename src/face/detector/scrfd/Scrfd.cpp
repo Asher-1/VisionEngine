@@ -138,16 +138,20 @@ namespace mirror {
     }
 
     int Scrfd::loadModel(const char *root_path) {
-        std::string sub_dir = "/detectors/retinaface";
-        std::string fd_param = std::string(root_path) + sub_dir + "/fd.param";
-        std::string fd_bin = std::string(root_path) + sub_dir + "/fd.bin";
-        if (net_->load_param(fd_param.c_str()) == -1 ||
-            net_->load_model(fd_bin.c_str()) == -1) {
-            return ErrorCode::MODEL_LOAD_ERROR;
-        }
-
-        return 0;
+        std::string sub_dir = "/detectors/scrfd";
+        std::string fd_param = std::string(root_path) + sub_dir + "/scrfd_500m_kps-opt2.param";
+        std::string fd_bin = std::string(root_path) + sub_dir + "/scrfd_500m_kps-opt2.bin";
+        return Super::loadModel(fd_param.c_str(), fd_bin.c_str());
     }
+
+#if defined __ANDROID__
+    int Scrfd::loadModel(AAssetManager *mgr) {
+        std::string sub_dir = "models/detectors/scrfd";
+        std::string fd_param = sub_dir + "/scrfd_500m_kps-opt2.param";
+        std::string fd_bin = sub_dir + "/scrfd_500m_kps-opt2.bin";
+        return Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
+    }
+#endif
 
     int Scrfd::detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const {
         cv::Mat img_cpy = img_src.clone();
@@ -181,12 +185,10 @@ namespace mirror {
                                wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT,
                                0.f);
 
-        const float mean_vals[3] = {127.5f, 127.5f, 127.5f};
-        const float norm_vals[3] = {1 / 128.f, 1 / 128.f, 1 / 128.f};
-        in_pad.substract_mean_normalize(mean_vals, norm_vals);
+        in_pad.substract_mean_normalize(mean_vals_, norm_vals_);
 
         ncnn::Extractor ex = net_->create_extractor();
-        ex.input("input.1", in);
+        ex.input("input.1", in_pad);
 
         faces.clear();
         // stride 8

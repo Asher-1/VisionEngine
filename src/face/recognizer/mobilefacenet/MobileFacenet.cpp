@@ -14,12 +14,17 @@ namespace mirror {
         std::string sub_dir = "/recognizers/mobilefacenet";
         std::string fr_param = std::string(root_path) + sub_dir + "/fr.param";
         std::string fr_bin = std::string(root_path) + sub_dir + "/fr.bin";
-        if (this->net_->load_param(fr_param.c_str()) == -1 ||
-            this->net_->load_model(fr_bin.c_str()) == -1) {
-            return ErrorCode::MODEL_LOAD_ERROR;
-        }
-        return 0;
+        return Super::loadModel(fr_param.c_str(), fr_bin.c_str());
     }
+
+#if defined __ANDROID__
+    int MobileFacenet::loadModel(AAssetManager *mgr) {
+        std::string sub_dir = "models/recognizers/mobilefacenet";
+        std::string fr_param = sub_dir + "/fr.param";
+        std::string fr_bin = sub_dir + "/fr.bin";
+        return Super::loadModel(mgr, fr_param.c_str(), fr_bin.c_str());
+    }
+#endif
 
     int MobileFacenet::extractFeature(const cv::Mat &img_face, std::vector<float> &feature) const {
         cv::Mat face_cpy = img_face.clone();

@@ -11,10 +11,15 @@ namespace mirror {
     class MtcnnFace : public Detector {
     public:
         explicit MtcnnFace(FaceDetectorType type = FaceDetectorType::MTCNN_FACE);
+
         ~MtcnnFace() override;
 
     protected:
         int loadModel(const char *root_path) override;
+
+#if defined __ANDROID__
+        int loadModel(AAssetManager* mgr) override;
+#endif
 
         int detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const override;
 

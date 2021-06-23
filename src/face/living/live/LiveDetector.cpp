@@ -36,18 +36,32 @@ namespace mirror {
         return 0;
     }
 
+#if defined __ANDROID__
+    int LiveDetector::loadModel(AAssetManager *mgr) {
+        std::string sub_dir = "models/living/live/";
+        for (std::size_t i = 0; i < nets_.size(); ++i) {
+            std::string model_param = sub_dir + configs_[i].name + ".param";
+            std::string model_bin = sub_dir + configs_[i].name + ".bin";
+            if (!nets_[i]) return ErrorCode::NULL_ERROR;
+
+            if (nets_[i]->load_param(mgr, model_param.c_str()) == -1 ||
+                nets_[i]->load_model(mgr, model_bin.c_str()) == -1) {
+                return ErrorCode::MODEL_LOAD_ERROR;
+            }
+        }
+        return 0;
+    }
+#endif
+
     float LiveDetector::detectLiving(const cv::Mat &src, const cv::Rect &box) const {
         float confidence = 0.f;//score
 
         for (int i = 0; i < model_num_; i++) {
             cv::Mat roi;
             if (configs_[i].org_resize) {
-
                 cv::resize(src, roi, inputSize_, 0, 0, 3);
-
             } else {
                 cv::Rect rect = FaceAntiSpoofing::CalculateBox(box, src.cols, src.rows, configs_[i]);
-
                 cv::resize(src(rect), roi, cv::Size(configs_[i].width, configs_[i].height));
             }
 
@@ -55,7 +69,6 @@ namespace mirror {
 
             ncnn::Extractor extractor = nets_[i]->create_extractor();
             extractor.set_light_mode(true);
-//            extractor.set_num_threads(thread_num_);
 
             extractor.input(net_input_name_.c_str(), in);
             ncnn::Mat out;

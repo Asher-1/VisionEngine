@@ -23,7 +23,7 @@ namespace mirror {
             }
         }
 
-        inline int LoadModel(const char *root_path, const ObjectEigenParams &params) {
+        inline int LoadModel(const ObjectEigenParams &params) {
             if (object_detector_ && object_detector_->getType() != params.objectDetectorType) {
                 destroyObjectDetector();
             }
@@ -38,10 +38,16 @@ namespace mirror {
                         break;
                 }
 
-                if (!object_detector_ || object_detector_->load(root_path, params) != 0) {
+                if (!object_detector_ || object_detector_->load(params) != 0) {
                     std::cout << "load object detector failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
+            }
+
+            if (object_detector_->update(params) != 0) {
+                std::cout << "update object detector model failed." << std::endl;
+                initialized_ = false;
+                return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
             initialized_ = true;
@@ -99,8 +105,8 @@ namespace mirror {
         }
     }
 
-    int ObjectEngine::loadModel(const char *root_path, const ObjectEigenParams &params) {
-        return impl_->LoadModel(root_path, params);
+    int ObjectEngine::loadModel(const ObjectEigenParams &params) {
+        return impl_->LoadModel(params);
     }
 
     int ObjectEngine::detectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {

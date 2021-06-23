@@ -10,17 +10,29 @@ namespace mirror {
 
     class Classifier {
     public:
+        using Super = Classifier;
+
         explicit Classifier(ClassifierType type);
 
         virtual ~Classifier();
 
-        int load(const char *root_path, const ClassifierEigenParams& params);
+        int load(const ClassifierEigenParams &params);
+        int update(const ClassifierEigenParams &params);
 
         int classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const;
 
         inline ClassifierType getType() const { return type_; }
 
     protected:
+        int loadLabels(const char *label_path);
+
+        int loadModel(const char *params, const char *models);
+
+#if defined __ANDROID__
+        virtual int loadModel(AAssetManager* mgr) { return -1; };
+        int loadModel(AAssetManager* mgr, const char* params, const char* models);
+#endif
+
         virtual int loadModel(const char *root_path) = 0;
 
         virtual int classifyObject(const cv::Mat &img_src, std::vector<ImageInfo> &images) const = 0;
@@ -46,6 +58,7 @@ namespace mirror {
     class MobilenetFactory : public ClassifierFactory {
     public:
         MobilenetFactory() = default;
+
         ~MobilenetFactory() override = default;
 
         Classifier *createClassifier() const override;

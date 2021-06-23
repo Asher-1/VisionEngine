@@ -14,12 +14,17 @@ namespace mirror {
         std::string sub_dir = "/landmarkers/insightface";
         std::string fl_param = std::string(root_path) + sub_dir + "/2d106.param";
         std::string fl_bin = std::string(root_path) + sub_dir + "/2d106.bin";
-        if (net_->load_param(fl_param.c_str()) == -1 ||
-            net_->load_model(fl_bin.c_str()) == -1) {
-            return ErrorCode::MODEL_LOAD_ERROR;
-        }
-        return 0;
+        return Super::loadModel(fl_param.c_str(), fl_bin.c_str());
     }
+
+#if defined __ANDROID__
+    int InsightfaceLandMarker::loadModel(AAssetManager *mgr) {
+        std::string sub_dir = "models/landmarkers/insightface";
+        std::string fl_param = sub_dir + "/2d106.param";
+        std::string fl_bin = sub_dir + "/2d106.bin";
+        return Super::loadModel(mgr, fl_param.c_str(), fl_bin.c_str());
+    }
+#endif
 
     int InsightfaceLandMarker::extractKeypoints(const cv::Mat &img_src,
                                                 const cv::Rect &face, std::vector<cv::Point2f> &keypoints) const {

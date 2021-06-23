@@ -26,12 +26,23 @@ namespace mirror {
         std::string sub_dir = "/object_detectors/mobilenetssd";
         std::string obj_param = std::string(root_path) + sub_dir + "/mobilenetssd.param";
         std::string obj_bin = std::string(root_path) + sub_dir + "/mobilenetssd.bin";
-        if (net_->load_param(obj_param.c_str()) == -1 ||
-            net_->load_model(obj_bin.c_str()) == -1) {
+        if (Super::loadModel(obj_param.c_str(), obj_bin.c_str()) != 0) {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
         return 0;
     }
+
+#if defined __ANDROID__
+    int MobilenetSSD::loadModel(AAssetManager *mgr) {
+        std::string sub_dir = "models/object_detectors/mobilenetssd";
+        std::string obj_param = sub_dir + "/mobilenetssd.param";
+        std::string obj_bin =  sub_dir + "/mobilenetssd.bin";
+        if (Super::loadModel(mgr, obj_param.c_str(), obj_bin.c_str()) != 0) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+        return 0;
+    }
+#endif
 
     int MobilenetSSD::detectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
         int width = img_src.cols;

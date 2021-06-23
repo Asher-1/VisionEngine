@@ -26,7 +26,29 @@ namespace mirror {
         }
     }
 
-    int Recognizer::load(const char *root_path, const FaceEigenParams &params) {
+    int Recognizer::loadModel(const char *params, const char *models) {
+        if (net_->load_param(params) == -1 ||
+            net_->load_model(models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+
+#if defined __ANDROID__
+    int Recognizer::loadModel(AAssetManager* mgr, const char* params, const char* models)
+    {
+        if (net_->load_param(mgr, params) == -1 ||
+            net_->load_model(mgr, models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+#endif
+
+
+    int Recognizer::load(const FaceEigenParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
 
@@ -42,8 +64,8 @@ namespace mirror {
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
         int num_threads = max_thread_num;
-        if (params.thread_num > 0 && params.thread_num < max_thread_num) {
-            num_threads = params.thread_num;
+        if (params.threadNum > 0 && params.threadNum < max_thread_num) {
+            num_threads = params.threadNum;
         }
         ncnn::set_omp_num_threads(num_threads);
         this->net_->opt = ncnn::Option();
@@ -54,7 +76,11 @@ namespace mirror {
 #endif // NCNN_VULKAN
 
         this->net_->opt.num_threads = num_threads;
-        int flag = this->loadModel(root_path);
+#if defined __ANDROID__
+        int flag = this->loadModel(params.mgr);
+#else
+        int flag = this->loadModel(params.modelPath.c_str());
+#endif
         if (flag != 0) {
             initialized_ = false;
             std::cout << "load recognizer model: " <<
@@ -64,6 +90,15 @@ namespace mirror {
             if (verbose_) {
                 std::cout << "end load recognizer model." << std::endl;
             }
+        }
+        return flag;
+    }
+
+    int Recognizer::update(const FaceEigenParams &params) {
+        verbose_ = params.verbose;
+        int flag = 0;
+        if (this->gpu_mode_ != params.gpuEnabled) {
+            flag = load(params);
         }
         return flag;
     }

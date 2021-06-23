@@ -26,15 +26,22 @@ namespace mirror {
 
         virtual ~FaceAntiSpoofing();
 
-        int load(const char *root_path, const FaceEigenParams& params);
+        int load(const FaceEigenParams &params);
+        int update(const FaceEigenParams &params);
 
-        bool detect(const cv::Mat &src, const cv::Rect &box, float& livingScore) const;
+        bool detect(const cv::Mat &src, const cv::Rect &box, float &livingScore) const;
 
         static cv::Rect CalculateBox(const cv::Rect &box, int w, int h, const ModelConfig &config);
 
         inline FaceAntiSpoofingType getType() const { return type_; }
 
     protected:
+
+
+#if defined __ANDROID__
+        virtual int loadModel(AAssetManager* mgr) { return -1; };
+#endif
+
         virtual int loadModel(const char *root_path) = 0;
 
         virtual float detectLiving(const cv::Mat &src, const cv::Rect &box) const = 0;

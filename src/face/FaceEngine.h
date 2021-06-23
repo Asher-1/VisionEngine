@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <opencv2/core.hpp>
-#include "../common/common.h"
+#include "common.h"
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(_WIN64)
 #ifdef FACE_EXPORTS
@@ -28,9 +28,9 @@ namespace mirror {
 
         FACE_API void destroyEngine();
 
-        FACE_API int loadModel(const char *root_path, const FaceEigenParams &params);
+        FACE_API int loadModel(const FaceEigenParams &params);
 
-        FACE_API bool detectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float& livingScore) const;
+        FACE_API bool detectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float &livingScore) const;
 
         FACE_API int detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const;
 

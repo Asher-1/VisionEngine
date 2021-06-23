@@ -49,6 +49,7 @@ namespace mirror {
         pre_tracked_faces_ = curr_tracked_faces;
         faces = curr_tracked_faces;
         std::cout << "end track face." << std::endl;
+        return 0;
     }
 
 }

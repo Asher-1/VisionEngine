@@ -32,11 +32,10 @@ namespace mirror {
     }
 
     int MtcnnFace::loadModel(const char *root_path) {
+        if (!pnet_ || !rnet_ || !onet_) return ErrorCode::NULL_ERROR;
         std::string sub_dir = "/detectors/mtcnn";
         std::string pnet_param = std::string(root_path) + sub_dir + "/pnet.param";
         std::string pnet_bin = std::string(root_path) + sub_dir + "/pnet.bin";
-
-        if (!pnet_ || !rnet_ || !onet_) return ErrorCode::NULL_ERROR;
 
         if (pnet_->load_param(pnet_param.c_str()) == -1 ||
             pnet_->load_model(pnet_bin.c_str()) == -1) {
@@ -65,6 +64,44 @@ namespace mirror {
         }
         return 0;
     }
+
+#if defined __ANDROID__
+    int MtcnnFace::loadModel(AAssetManager *mgr) {
+        if (!pnet_ || !rnet_ || !onet_) return ErrorCode::NULL_ERROR;
+
+        std::string sub_dir = "models/detectors/mtcnn";
+
+        std::string pnet_param = sub_dir + "/pnet.param";
+        std::string pnet_bin = sub_dir + "/pnet.bin";
+        if (net_->load_param(mgr, pnet_param.c_str()) == -1 ||
+            net_->load_model(mgr, pnet_bin.c_str()) == -1) {
+            std::cout << "Load pnet model failed." << std::endl;
+            std::cout << "pnet param: " << pnet_param << std::endl;
+            std::cout << "pnet bin: " << pnet_bin << std::endl;
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+        std::string rnet_param = sub_dir + "/rnet.param";
+        std::string rnet_bin = sub_dir + "/rnet.bin";
+        if (rnet_->load_param(mgr, rnet_param.c_str()) == -1 ||
+            rnet_->load_model(mgr, rnet_bin.c_str()) == -1) {
+            std::cout << "Load rnet model failed." << std::endl;
+            std::cout << "rnet param: " << rnet_param << std::endl;
+            std::cout << "rnet bin: " << rnet_bin << std::endl;
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+        std::string onet_param = sub_dir + "/onet.param";
+        std::string onet_bin = sub_dir + "/onet.bin";
+        if (onet_->load_param(mgr, onet_param.c_str()) == -1 ||
+            onet_->load_model(mgr, onet_bin.c_str()) == -1) {
+            std::cout << "Load onet model failed." << std::endl;
+            std::cout << "onet param: " << onet_param << std::endl;
+            std::cout << "onet bin: " << onet_bin << std::endl;
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+        return 0;
+    }
+#endif
+
 
     int MtcnnFace::detectFace(const cv::Mat &img_src,
                               std::vector<FaceInfo> &faces) const {

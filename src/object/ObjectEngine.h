@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <opencv2/core.hpp>
-#include "../common/common.h"
+#include "common.h"
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(_WIN64)
     #ifdef OBJECT_EXPORTS
@@ -24,7 +24,7 @@ public:
 	OBJECT_API static void ReleaseInstance();
 	OBJECT_API void destroyEngine();
 
-	OBJECT_API int loadModel(const char* root_path, const ObjectEigenParams &params);
+	OBJECT_API int loadModel(const ObjectEigenParams &params);
 	OBJECT_API int detectObject(const cv::Mat& img_src, std::vector<ObjectInfo>& objects) const;
 
 private:

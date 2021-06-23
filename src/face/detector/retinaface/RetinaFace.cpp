@@ -13,8 +13,9 @@ namespace mirror {
         std::string sub_dir = "/detectors/retinaface";
         std::string fd_param = std::string(root_path) + sub_dir + "/fd.param";
         std::string fd_bin = std::string(root_path) + sub_dir + "/fd.bin";
-        if (net_->load_param(fd_param.c_str()) == -1 ||
-            net_->load_model(fd_bin.c_str()) == -1) {
+        int flag = Super::loadModel(fd_param.c_str(), fd_bin.c_str());
+        if (flag != 0)
+        {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
 
@@ -34,7 +35,35 @@ namespace mirror {
         return 0;
     }
 
-    int RetinaFace::detectFace(const cv::Mat &img_src, std::vector<FaceInfo>& faces) const {
+#if defined __ANDROID__
+    int RetinaFace::loadModel(AAssetManager *mgr) {
+        std::string sub_dir = "models/detectors/retinaface";
+        std::string fd_param = sub_dir + "/fd.param";
+        std::string fd_bin = sub_dir + "/fd.bin";
+        int flag = Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
+        if (flag != 0)
+        {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        // generate anchors
+        for (int i = 0; i < 3; ++i) {
+            ANCHORS anchors;
+            if (0 == i) {
+                GenerateAnchors(16, {1.0f}, {32, 16}, anchors);
+            } else if (1 == i) {
+                GenerateAnchors(16, {1.0f}, {8, 4}, anchors);
+            } else {
+                GenerateAnchors(16, {1.0f}, {2, 1}, anchors);
+            }
+            anchors_generated_.push_back(anchors);
+        }
+
+        return 0;
+    }
+#endif
+
+    int RetinaFace::detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const {
         cv::Mat img_cpy = img_src.clone();
         int img_width = img_cpy.cols;
         int img_height = img_cpy.rows;
@@ -124,7 +153,7 @@ namespace mirror {
                 }
             }
         }
-        
+
         return 0;
     }
 

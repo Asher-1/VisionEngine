@@ -5,13 +5,20 @@
 #include "opencv2/core.hpp"
 
 namespace mirror {
-class CenterFace : public Detector {
-public:
-    explicit CenterFace(FaceDetectorType type = FaceDetectorType::CENTER_FACE);
-    ~CenterFace() override = default;
-protected:
-	int loadModel(const char* root_path) override;
-	int detectFace(const cv::Mat& img_src, std::vector<FaceInfo>& faces) const override;
-};
+    class CenterFace : public Detector {
+    public:
+        explicit CenterFace(FaceDetectorType type = FaceDetectorType::CENTER_FACE);
+
+        ~CenterFace() override = default;
+
+    protected:
+        int loadModel(const char *root_path) override;
+
+#if defined __ANDROID__
+        int loadModel(AAssetManager* mgr) override;
+#endif
+
+        int detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const override;
+    };
 
 }
