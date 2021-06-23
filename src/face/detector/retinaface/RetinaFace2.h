@@ -19,7 +19,9 @@ namespace mirror {
         int detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const override;
 
     private:
-        const cv::Size inputSize_ = {640, 640};
+        const int RPNs_[3] = {32, 16, 8};
+        const cv::Size inputSize_ = {300, 300};
+        std::vector<ANCHORS> anchors_generated_;
     };
 
 }

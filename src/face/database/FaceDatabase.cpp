@@ -111,7 +111,7 @@ namespace mirror {
             return CalculateSimilarity(feat1, feat2);
         }
 
-        size_t QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
+        int QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
             std::vector<std::pair<std::string, float>> result(db_.size());
             {
                 size_t i = 0;
@@ -120,6 +120,10 @@ namespace mirror {
                     result[i].second = Compare(feat, line.second);
                     i++;
                 }
+            }
+
+            if (result.empty()) {
+                return ErrorCode::EMPTY_INPUT_ERROR;
             }
 
             std::partial_sort(result.begin(), result.begin() + 1, result.end(), [](
@@ -178,7 +182,7 @@ namespace mirror {
         return impl_->Delete(name);
     }
 
-    int64_t FaceDatabase::QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
+    int FaceDatabase::QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
         return impl_->QueryTop(feat, query_result);
     }
 

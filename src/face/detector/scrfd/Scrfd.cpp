@@ -281,27 +281,12 @@ namespace mirror {
             faces[i].location_.height = static_cast<int>(y1 - y0);
 
             if (has_kps_) {
-                float x0 = (faces[i].keypoints_[0].x - (wpad / 2)) / scale;
-                float y0 = (faces[i].keypoints_[0].y - (hpad / 2)) / scale;
-                float x1 = (faces[i].keypoints_[1].x - (wpad / 2)) / scale;
-                float y1 = (faces[i].keypoints_[1].y - (hpad / 2)) / scale;
-                float x2 = (faces[i].keypoints_[2].x - (wpad / 2)) / scale;
-                float y2 = (faces[i].keypoints_[2].y - (hpad / 2)) / scale;
-                float x3 = (faces[i].keypoints_[3].x - (wpad / 2)) / scale;
-                float y3 = (faces[i].keypoints_[3].y - (hpad / 2)) / scale;
-                float x4 = (faces[i].keypoints_[4].x - (wpad / 2)) / scale;
-                float y4 = (faces[i].keypoints_[4].y - (hpad / 2)) / scale;
-
-                faces[i].keypoints_[0].x = std::max(std::min(x0, (float) img_width - 1), 0.f);
-                faces[i].keypoints_[0].y = std::max(std::min(y0, (float) img_height - 1), 0.f);
-                faces[i].keypoints_[1].x = std::max(std::min(x1, (float) img_width - 1), 0.f);
-                faces[i].keypoints_[1].y = std::max(std::min(y1, (float) img_height - 1), 0.f);
-                faces[i].keypoints_[2].x = std::max(std::min(x2, (float) img_width - 1), 0.f);
-                faces[i].keypoints_[2].y = std::max(std::min(y2, (float) img_height - 1), 0.f);
-                faces[i].keypoints_[3].x = std::max(std::min(x3, (float) img_width - 1), 0.f);
-                faces[i].keypoints_[3].y = std::max(std::min(y3, (float) img_height - 1), 0.f);
-                faces[i].keypoints_[4].x = std::max(std::min(x4, (float) img_width - 1), 0.f);
-                faces[i].keypoints_[4].y = std::max(std::min(y4, (float) img_height - 1), 0.f);
+                for (int k = 0; k < 5; ++k) {
+                    float x = (faces[i].keypoints_[k].x - (wpad / 2)) / scale;
+                    float y = (faces[i].keypoints_[k].y - (hpad / 2)) / scale;
+                    faces[i].keypoints_[k].x = std::max(std::min(x, (float) img_width - 1), 0.f);
+                    faces[i].keypoints_[k].y = std::max(std::min(y, (float) img_height - 1), 0.f);
+                }
             }
         }
         return 0;

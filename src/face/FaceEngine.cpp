@@ -330,7 +330,7 @@ namespace mirror {
             return 0;
         }
 
-        inline int64_t QueryTop(const std::vector<float> &feat, QueryResult &query_result) {
+        inline int QueryTop(const std::vector<float> &feat, QueryResult &query_result) {
             if (!initialized_ || !database_) {
                 std::cout << "face database model uninitialized!" << std::endl;
                 return ErrorCode::UNINITIALIZED_ERROR;
@@ -456,7 +456,7 @@ namespace mirror {
         return impl_->Insert(feat, name);
     }
 
-    int64_t FaceEngine::QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
+    int FaceEngine::QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
         return impl_->QueryTop(feat, query_result);
     }
 }

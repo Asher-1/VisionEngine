@@ -39,7 +39,6 @@ namespace mirror {
 
         virtual int detectFace(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const = 0;
 
-
     protected:
         FaceDetectorType type_;
         ncnn::Net *net_ = nullptr;

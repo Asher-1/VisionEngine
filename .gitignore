@@ -1,7 +1,6 @@
 build*
 install/*
-cmake-build-debug
-cmake-build-release
+cmake-*
 data/models
 vs2017
 vs2019

@@ -4,61 +4,144 @@
 #include <ncnn/net.h>
 
 namespace mirror {
+
+    static ncnn::Mat generate_anchors(int base_size, const ncnn::Mat &ratios, const ncnn::Mat &scales) {
+        int num_ratio = ratios.w;
+        int num_scale = scales.w;
+
+        ncnn::Mat anchors;
+        anchors.create(4, num_ratio * num_scale);
+
+        const float cx = base_size * 0.5f;
+        const float cy = base_size * 0.5f;
+
+        for (int i = 0; i < num_ratio; i++) {
+            float ar = ratios[i];
+
+            int r_w = round(base_size / sqrt(ar));
+            int r_h = round(r_w * ar); //round(base_size * sqrt(ar));
+
+            for (int j = 0; j < num_scale; j++) {
+                float scale = scales[j];
+
+                float rs_w = r_w * scale;
+                float rs_h = r_h * scale;
+
+                float *anchor = anchors.row(i * num_scale + j);
+
+                anchor[0] = cx - rs_w * 0.5f;
+                anchor[1] = cy - rs_h * 0.5f;
+                anchor[2] = cx + rs_w * 0.5f;
+                anchor[3] = cy + rs_h * 0.5f;
+            }
+        }
+
+        return anchors;
+    }
+
+    static void generate_proposals(const ncnn::Mat &anchors, int feat_stride, const ncnn::Mat &score_blob,
+                                   const ncnn::Mat &bbox_blob, const ncnn::Mat &landmark_blob, float scoreThreshold_,
+                                   std::vector<FaceInfo> &faceobjects) {
+        int w = score_blob.w;
+        int h = score_blob.h;
+
+        // generate face proposal from bbox deltas and shifted anchors
+        const int num_anchors = anchors.h;
+
+        for (int q = 0; q < num_anchors; q++) {
+            const float *anchor = anchors.row(q);
+
+            const ncnn::Mat score = score_blob.channel(q + num_anchors);
+            const ncnn::Mat bbox = bbox_blob.channel_range(q * 4, 4);
+            const ncnn::Mat landmark = landmark_blob.channel_range(q * 10, 10);
+
+            // shifted anchor
+            float anchor_y = anchor[1];
+
+            float anchor_w = anchor[2] - anchor[0];
+            float anchor_h = anchor[3] - anchor[1];
+
+            for (int i = 0; i < h; i++) {
+                float anchor_x = anchor[0];
+
+                for (int j = 0; j < w; j++) {
+                    int index = i * w + j;
+
+                    float prob = score[index];
+
+                    if (prob >= scoreThreshold_) {
+                        // apply center size
+                        float dx = bbox.channel(0)[index];
+                        float dy = bbox.channel(1)[index];
+                        float dw = bbox.channel(2)[index];
+                        float dh = bbox.channel(3)[index];
+
+                        float cx = anchor_x + anchor_w * 0.5f;
+                        float cy = anchor_y + anchor_h * 0.5f;
+
+                        float pb_cx = cx + anchor_w * dx;
+                        float pb_cy = cy + anchor_h * dy;
+
+                        float pb_w = anchor_w * exp(dw);
+                        float pb_h = anchor_h * exp(dh);
+
+                        float x0 = pb_cx - pb_w * 0.5f;
+                        float y0 = pb_cy - pb_h * 0.5f;
+                        float x1 = pb_cx + pb_w * 0.5f;
+                        float y1 = pb_cy + pb_h * 0.5f;
+
+                        FaceInfo obj;
+                        obj.location_.x = x0;
+                        obj.location_.y = y0;
+                        obj.location_.width = (x1 - x0 + 1);
+                        obj.location_.height = (y1 - y0 + 1);
+                        obj.keypoints_[0].x = cx + (anchor_w + 1) * landmark.channel(0)[index];
+                        obj.keypoints_[0].y = cy + (anchor_h + 1) * landmark.channel(1)[index];
+                        obj.keypoints_[1].x = cx + (anchor_w + 1) * landmark.channel(2)[index];
+                        obj.keypoints_[1].y = cy + (anchor_h + 1) * landmark.channel(3)[index];
+                        obj.keypoints_[2].x = cx + (anchor_w + 1) * landmark.channel(4)[index];
+                        obj.keypoints_[2].y = cy + (anchor_h + 1) * landmark.channel(5)[index];
+                        obj.keypoints_[3].x = cx + (anchor_w + 1) * landmark.channel(6)[index];
+                        obj.keypoints_[3].y = cy + (anchor_h + 1) * landmark.channel(7)[index];
+                        obj.keypoints_[4].x = cx + (anchor_w + 1) * landmark.channel(8)[index];
+                        obj.keypoints_[4].y = cy + (anchor_h + 1) * landmark.channel(9)[index];
+                        obj.score_ = prob;
+
+                        faceobjects.push_back(obj);
+                    }
+                    anchor_x += feat_stride;
+                }
+                anchor_y += feat_stride;
+            }
+        }
+    }
+
     RetinaFace::RetinaFace(FaceDetectorType type) : Detector(type) {
         iouThreshold_ = 0.4f;
-        scoreThreshold_ = 0.8f;
+        scoreThreshold_ = 0.7f;
     }
 
     int RetinaFace::loadModel(const char *root_path) {
         std::string sub_dir = "/detectors/retinaface";
-        std::string fd_param = std::string(root_path) + sub_dir + "/fd.param";
-        std::string fd_bin = std::string(root_path) + sub_dir + "/fd.bin";
+        std::string fd_param = std::string(root_path) + sub_dir + "/mnet.25-opt.param";
+        std::string fd_bin = std::string(root_path) + sub_dir + "/mnet.25-opt.bin";
         int flag = Super::loadModel(fd_param.c_str(), fd_bin.c_str());
-        if (flag != 0)
-        {
+        if (flag != 0) {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
-
-        // generate anchors
-        for (int i = 0; i < 3; ++i) {
-            ANCHORS anchors;
-            if (0 == i) {
-                GenerateAnchors(16, {1.0f}, {32, 16}, anchors);
-            } else if (1 == i) {
-                GenerateAnchors(16, {1.0f}, {8, 4}, anchors);
-            } else {
-                GenerateAnchors(16, {1.0f}, {2, 1}, anchors);
-            }
-            anchors_generated_.push_back(anchors);
-        }
-
         return 0;
     }
 
 #if defined __ANDROID__
     int RetinaFace::loadModel(AAssetManager *mgr) {
         std::string sub_dir = "models/detectors/retinaface";
-        std::string fd_param = sub_dir + "/fd.param";
-        std::string fd_bin = sub_dir + "/fd.bin";
+        std::string fd_param = sub_dir + "/mnet.25-opt.param";
+        std::string fd_bin = sub_dir + "/mnet.25-opt.bin";
         int flag = Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
         if (flag != 0)
         {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
-
-        // generate anchors
-        for (int i = 0; i < 3; ++i) {
-            ANCHORS anchors;
-            if (0 == i) {
-                GenerateAnchors(16, {1.0f}, {32, 16}, anchors);
-            } else if (1 == i) {
-                GenerateAnchors(16, {1.0f}, {8, 4}, anchors);
-            } else {
-                GenerateAnchors(16, {1.0f}, {2, 1}, anchors);
-            }
-            anchors_generated_.push_back(anchors);
-        }
-
         return 0;
     }
 #endif
@@ -67,93 +150,129 @@ namespace mirror {
         cv::Mat img_cpy = img_src.clone();
         int img_width = img_cpy.cols;
         int img_height = img_cpy.rows;
+
         float factor_x = static_cast<float>(img_width) / inputSize_.width;
         float factor_y = static_cast<float>(img_height) / inputSize_.height;
-        ncnn::Extractor ex = net_->create_extractor();
+
+        // pad to multiple of 32
+        int w = img_width;
+        int h = img_height;
+        if (w > h) {
+            w = inputSize_.width;
+            h = h / factor_x;
+            factor_y = factor_x;
+        } else {
+            h = inputSize_.height;
+            w = w / factor_y;
+            factor_x = factor_y;
+        }
+
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_cpy.data,
                                                      ncnn::Mat::PIXEL_BGR2RGB,
                                                      img_width,
                                                      img_height,
-                                                     inputSize_.width,
-                                                     inputSize_.height);
+                                                     w,
+                                                     h);
+
+        ncnn::Extractor ex = net_->create_extractor();
         ex.input("data", in);
 
         faces.clear();
-        for (int i = 0; i < 3; ++i) {
-            std::string class_layer_name = "face_rpn_cls_prob_reshape_stride" + std::to_string(RPNs_[i]);
-            std::string bbox_layer_name = "face_rpn_bbox_pred_stride" + std::to_string(RPNs_[i]);
-            std::string landmark_layer_name = "face_rpn_landmark_pred_stride" + std::to_string(RPNs_[i]);
+        // stride 32
+        {
+            ncnn::Mat score_blob, bbox_blob, landmark_blob;
+            ex.extract("face_rpn_cls_prob_reshape_stride32", score_blob);
+            ex.extract("face_rpn_bbox_pred_stride32", bbox_blob);
+            ex.extract("face_rpn_landmark_pred_stride32", landmark_blob);
 
-            ncnn::Mat class_mat, bbox_mat, landmark_mat;
-            ex.extract(class_layer_name.c_str(), class_mat);
-            ex.extract(bbox_layer_name.c_str(), bbox_mat);
-            ex.extract(landmark_layer_name.c_str(), landmark_mat);
+            const int base_size = 16;
+            const int feat_stride = 32;
+            ncnn::Mat ratios(1);
+            ratios[0] = 1.f;
+            ncnn::Mat scales(2);
+            scales[0] = 32.f;
+            scales[1] = 16.f;
+            ncnn::Mat anchors = generate_anchors(base_size, ratios, scales);
 
-            ANCHORS anchors = anchors_generated_.at(i);
-            int width = class_mat.w;
-            int height = class_mat.h;
-            int anchor_num = static_cast<int>(anchors.size());
-            for (int h = 0; h < height; ++h) {
-                for (int w = 0; w < width; ++w) {
-                    int index = h * width + w;
-                    for (int a = 0; a < anchor_num; ++a) {
-                        float score = class_mat.channel(anchor_num + a)[index];
-                        if (score < scoreThreshold_) {
-                            continue;
-                        }
-                        // 1.获取anchor生成的box
-                        cv::Rect box = cv::Rect(w * RPNs_[i] + anchors[a].x,
-                                                h * RPNs_[i] + anchors[a].y,
-                                                anchors[a].width,
-                                                anchors[a].height);
+            std::vector<FaceInfo> faceobjects32;
+            generate_proposals(anchors, feat_stride, score_blob, bbox_blob, landmark_blob, scoreThreshold_,
+                               faceobjects32);
 
-                        // 2.解析出偏移量
-                        float delta_x = bbox_mat.channel(a * 4 + 0)[index];
-                        float delta_y = bbox_mat.channel(a * 4 + 1)[index];
-                        float delta_w = bbox_mat.channel(a * 4 + 2)[index];
-                        float delta_h = bbox_mat.channel(a * 4 + 3)[index];
-
-                        // 3.计算anchor box的中心
-                        cv::Point2f center = cv::Point2f(box.x + box.width * 0.5f,
-                                                         box.y + box.height * 0.5f);
-
-                        // 4.计算框的实际中心（anchor的中心+偏移量）
-                        center.x = center.x + delta_x * box.width;
-                        center.y = center.y + delta_y * box.height;
-
-                        // 5.计算出实际的宽和高
-                        float curr_width = std::exp(delta_w) * (box.width + 1);
-                        float curr_height = std::exp(delta_h) * (box.height + 1);
-
-                        // 6.获取实际的矩形位置
-                        cv::Rect curr_box = cv::Rect(static_cast<int>(center.x - curr_width * 0.5f),
-                                                     static_cast<int>(center.y - curr_height * 0.5f),
-                                                     static_cast<int>(curr_width),
-                                                     static_cast<int>(curr_height));
-                        curr_box.x = MAX(curr_box.x * factor_x, 0);
-                        curr_box.y = MAX(curr_box.y * factor_y, 0);
-                        curr_box.width = MIN(img_width - curr_box.x, curr_box.width * factor_x);
-                        curr_box.height = MIN(img_height - curr_box.y, curr_box.height * factor_y);
-
-                        FaceInfo face_info;
-                        memset(&face_info, 0, sizeof(face_info));
-
-                        int offset_index = landmark_mat.c / anchor_num;
-                        for (int k = 0; k < 5; ++k) {
-                            float x = landmark_mat.channel(a * offset_index + 2 * k)[index] * box.width + center.x;
-                            float y = landmark_mat.channel(a * offset_index + 2 * k + 1)[index] * box.height + center.y;
-                            face_info.keypoints_[k].x = MIN(MAX(x * factor_x, 0.0f), img_width - 1);
-                            face_info.keypoints_[k].y = MIN(MAX(y * factor_y, 0.0f), img_height - 1);
-                        }
-
-                        face_info.score_ = score;
-                        face_info.location_ = curr_box;
-                        faces.push_back(face_info);
-                    }
-                }
-            }
+            faces.insert(faces.end(), faceobjects32.begin(), faceobjects32.end());
         }
 
+        // stride 16
+        {
+            ncnn::Mat score_blob, bbox_blob, landmark_blob;
+            ex.extract("face_rpn_cls_prob_reshape_stride16", score_blob);
+            ex.extract("face_rpn_bbox_pred_stride16", bbox_blob);
+            ex.extract("face_rpn_landmark_pred_stride16", landmark_blob);
+
+            const int base_size = 16;
+            const int feat_stride = 16;
+            ncnn::Mat ratios(1);
+            ratios[0] = 1.f;
+            ncnn::Mat scales(2);
+            scales[0] = 8.f;
+            scales[1] = 4.f;
+            ncnn::Mat anchors = generate_anchors(base_size, ratios, scales);
+
+            std::vector<FaceInfo> faceobjects16;
+            generate_proposals(anchors, feat_stride, score_blob, bbox_blob, landmark_blob, scoreThreshold_,
+                               faceobjects16);
+
+            faces.insert(faces.end(), faceobjects16.begin(), faceobjects16.end());
+        }
+
+        // stride 8
+        {
+            ncnn::Mat score_blob, bbox_blob, landmark_blob;
+            ex.extract("face_rpn_cls_prob_reshape_stride8", score_blob);
+            ex.extract("face_rpn_bbox_pred_stride8", bbox_blob);
+            ex.extract("face_rpn_landmark_pred_stride8", landmark_blob);
+
+            const int base_size = 16;
+            const int feat_stride = 8;
+            ncnn::Mat ratios(1);
+            ratios[0] = 1.f;
+            ncnn::Mat scales(2);
+            scales[0] = 2.f;
+            scales[1] = 1.f;
+            ncnn::Mat anchors = generate_anchors(base_size, ratios, scales);
+
+            std::vector<FaceInfo> faceobjects8;
+            generate_proposals(anchors, feat_stride, score_blob, bbox_blob, landmark_blob, scoreThreshold_,
+                               faceobjects8);
+
+            faces.insert(faces.end(), faceobjects8.begin(), faceobjects8.end());
+        }
+
+        for (int i = 0; i < faces.size(); i++) {
+
+            // location_
+            float x0 = faces[i].location_.x * factor_x;
+            float y0 = faces[i].location_.y * factor_y;
+            float x1 = (faces[i].location_.x + faces[i].location_.width) * factor_x;
+            float y1 = (faces[i].location_.y + faces[i].location_.height) * factor_y;
+
+            x0 = std::max(std::min(x0, (float) img_width - 1), 0.f);
+            y0 = std::max(std::min(y0, (float) img_height - 1), 0.f);
+            x1 = std::max(std::min(x1, (float) img_width - 1), 0.f);
+            y1 = std::max(std::min(y1, (float) img_height - 1), 0.f);
+
+            faces[i].location_.x = static_cast<int>(x0);
+            faces[i].location_.y = static_cast<int>(y0);
+            faces[i].location_.width = static_cast<int>(x1 - x0);
+            faces[i].location_.height = static_cast<int>(y1 - y0);
+
+            // keypoints_
+            for (int k = 0; k < 5; ++k) {
+                float x = (faces[i].keypoints_[k].x) * factor_x;
+                float y = (faces[i].keypoints_[k].y) * factor_y;
+                faces[i].keypoints_[k].x = std::max(std::min(x, (float) img_width - 1), 0.f);
+                faces[i].keypoints_[k].y = std::max(std::min(y, (float) img_height - 1), 0.f);
+            }
+        }
         return 0;
     }
 

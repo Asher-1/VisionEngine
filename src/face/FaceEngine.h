@@ -56,7 +56,7 @@ namespace mirror {
 
         FACE_API int Insert(const std::vector<float> &feat, const std::string &name);
 
-        FACE_API int64_t QueryTop(const std::vector<float> &feat, QueryResult &query_result) const;
+        FACE_API int QueryTop(const std::vector<float> &feat, QueryResult &query_result) const;
 
     private:
         //! Default constructor
