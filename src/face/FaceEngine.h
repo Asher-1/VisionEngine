@@ -52,6 +52,8 @@ namespace mirror {
 
         FACE_API int Clear();
 
+        int Find(std::vector<std::string>& names) const;
+
         FACE_API int Delete(const std::string &name);
 
         FACE_API int Insert(const std::vector<float> &feat, const std::string &name);

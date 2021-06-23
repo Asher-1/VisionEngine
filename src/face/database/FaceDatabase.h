@@ -21,6 +21,7 @@ public:
 	bool Load(const char* path);
 	bool Save(const char* path) const;
 	int Delete(const std::string& name);
+	int Find(std::vector<std::string>& names) const;
 	int64_t Insert(const std::vector<float>& feat, const std::string& name);
 	int QueryTop(const std::vector<float>& feat, QueryResult& query_result) const;
 

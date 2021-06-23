@@ -380,16 +380,16 @@ int TestTrack(int argc, char *argv[]) {
 
                 // compare features
                 QueryResult query_result;
-                face_engine->QueryTop(feat, query_result);
-                cv::Point2i position(roi.tl().x, next_y);
-                if (query_result.sim_ > 0.5) {
-                    sprintf(text, "%s %.1f%%", query_result.name_.c_str(),
-                            query_result.sim_ * 100);
-                } else {
-                    sprintf(text, "%s %.1f%%", "stranger",
-                            query_result.sim_ * 100);
+                if (face_engine->QueryTop(feat, query_result) == 0) {
+                    if (query_result.sim_ > 0.5) {
+                        sprintf(text, "%s %.1f%%", query_result.name_.c_str(),
+                                query_result.sim_ * 100);
+                    } else {
+                        sprintf(text, "%s %.1f%%", "stranger",
+                                query_result.sim_ * 100);
+                    }
+                    utility::DrawText(frame, cv::Point2i(roi.tl().x, next_y), text);
                 }
-                utility::DrawText(frame, position, text);
             }
         }
 
@@ -427,12 +427,12 @@ int TestTrack(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    TestDetector(argc, argv);
-    TestLandmark(argc, argv);
-    TestRecognize(argc, argv);
-    TestAlignFace(argc, argv);
-    TestDatabase(argc, argv);
-    TestMask(argc, argv);
+//    TestDetector(argc, argv);
+//    TestLandmark(argc, argv);
+//    TestRecognize(argc, argv);
+//    TestAlignFace(argc, argv);
+//    TestDatabase(argc, argv);
+//    TestMask(argc, argv);
     TestTrack(argc, argv);
     return 0;
 }

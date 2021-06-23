@@ -21,12 +21,15 @@ namespace mirror {
     // common
     const int CUSTOM_THREAD_NUMBER = 2;
     namespace ErrorCode {
+        const int SUCCESS = 0;
         const int NULL_ERROR = 10000;
         const int EMPTY_INPUT_ERROR = 10001;
         const int UNINITIALIZED_ERROR = 10002;
         const int MODEL_LOAD_ERROR = 10003;
         const int MODEL_UPDATE_ERROR = 10004;
         const int DIMENSION_MISS_MATCH_ERROR = 10005;
+        const int NOT_FOUND_ERROR = 10006;
+        const int EMPTY_DATA_ERROR = 10007;
     }
 
 

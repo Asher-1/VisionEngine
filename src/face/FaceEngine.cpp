@@ -313,6 +313,14 @@ namespace mirror {
             return static_cast<int>(database_->Insert(feat, name));
         }
 
+        inline int Find(std::vector<std::string> &names) const {
+            if (!initialized_ || !database_) {
+                std::cout << "face database model uninitialized!" << std::endl;
+                return ErrorCode::UNINITIALIZED_ERROR;
+            }
+            return database_->Find(names);
+        }
+
         inline int Delete(const std::string &name) {
             if (!initialized_ || !database_) {
                 std::cout << "face database model uninitialized!" << std::endl;
@@ -458,5 +466,9 @@ namespace mirror {
 
     int FaceEngine::QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
         return impl_->QueryTop(feat, query_result);
+    }
+
+    int FaceEngine::Find(std::vector<std::string> &names) const {
+        return impl_->Find(names);
     }
 }

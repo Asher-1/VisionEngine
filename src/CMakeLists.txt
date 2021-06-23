@@ -6,7 +6,7 @@ file(GLOB_RECURSE SRC_FILES
 
 message(${SRC_FILES})
 
-SET(CMAKE_BUILD_TYPE "DEBUG")
+SET(CMAKE_BUILD_TYPE "Release")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fPIC -std=c++11 -fopenmp")
 add_library(VisionEngine STATIC ${SRC_FILES})

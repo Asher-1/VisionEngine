@@ -12,6 +12,14 @@ namespace mirror {
 
         ~Impl() = default;
 
+        int Find(std::vector<std::string>& names) const {
+            names.clear();
+            for (auto const &line : db_) {
+                names.emplace_back(line.first);
+            }
+            return names.empty() ? ErrorCode::EMPTY_DATA_ERROR : 0;
+        }
+
         bool Save(StreamWriter &writer) const {
             const uint64_t num_faces = db_.size();
             const uint64_t dim_feat = kFaceFeatureDim;
@@ -82,6 +90,8 @@ namespace mirror {
             if (it != db_.end()) {
                 db_.erase(it);
                 std::cout << "Delete: " << name << " successfully." << std::endl;
+            } else {
+                return ErrorCode::NOT_FOUND_ERROR;
             }
             return 0;
         }
@@ -190,6 +200,9 @@ namespace mirror {
         impl_->Clear();
     }
 
+    int FaceDatabase::Find(std::vector<std::string>& names) const {
+        return impl_->Find(names);
+    }
 
 }
 
