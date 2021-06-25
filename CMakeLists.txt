@@ -8,5 +8,6 @@ Option(MIRROR_BUILD_OBJECT "build object test" ON)
 Option(MIRROR_BUILD_CLASSIFIER "build classifier test" ON)
 Option(MIRROR_BUILD_WITH_FULL_OPENCV "full opencv support" ON)
 Option(MIRROR_INSTALL_SDK "install mirror library and headers" ON)
+Option(MIRROR_INSTALL_EXAMPLES "install mirror examples" OFF)
 
 add_subdirectory(src)

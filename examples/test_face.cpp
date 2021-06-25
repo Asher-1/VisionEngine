@@ -201,6 +201,8 @@ int TestDatabase(int argc, char *argv[]) {
         return 10001;
     }
 
+    bool show_aligned = false;
+
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEigenParams params;
     params.modelPath = model_path;
@@ -217,7 +219,11 @@ int TestDatabase(int argc, char *argv[]) {
     for (int i = 0; i < faces_num; ++i) {
         cv::Rect face = faces.at(i).location_;
 
-//        cv::imshow("aligned before", img_src(face));
+        if (show_aligned) {
+#if MIRROR_BUILD_WITH_FULL_OPENCV
+            cv::imshow("aligned before", img_src(face));
+#endif
+        }
 
         // align face
         cv::Mat faceAligned;
@@ -225,7 +231,11 @@ int TestDatabase(int argc, char *argv[]) {
         ConvertKeyPoints(faces.at(i).keypoints_, 5, keyPoints);
         face_engine->alignFace(img_src, keyPoints, faceAligned);
 
-//        cv::imshow("aligned after", faceAligned);
+        if (show_aligned) {
+#if MIRROR_BUILD_WITH_FULL_OPENCV
+            cv::imshow("aligned after", faceAligned);
+#endif
+        }
 
         // get face feature
         std::vector<float> feat;
@@ -427,12 +437,12 @@ int TestTrack(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-//    TestDetector(argc, argv);
-//    TestLandmark(argc, argv);
-//    TestRecognize(argc, argv);
-//    TestAlignFace(argc, argv);
-//    TestDatabase(argc, argv);
-//    TestMask(argc, argv);
+    TestDetector(argc, argv);
+    TestLandmark(argc, argv);
+    TestRecognize(argc, argv);
+    TestAlignFace(argc, argv);
+    TestDatabase(argc, argv);
+    TestMask(argc, argv);
     TestTrack(argc, argv);
     return 0;
 }

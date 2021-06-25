@@ -207,4 +207,25 @@ namespace mirror {
     void ConvertKeyPoints(const cv::Point2f ori[], int size, std::vector<cv::Point2f> &dst) {
         dst = std::vector<cv::Point2f>(ori, ori + size);
     }
+
+    void ComputeMeanAndVariance2(const std::vector<float> &inputs, double &mean, double &variance) {
+        double _mean = 0.0, _std2 = 0.0;
+        std::size_t count = 0;
+
+        for (std::size_t i = 0; i < inputs.size(); ++i) {
+            _mean += inputs[i];
+            _std2 += static_cast<double>(inputs[i]) * inputs[i];
+            ++count;
+        }
+
+        if (count) {
+            _mean /= count;
+            mean = static_cast<double>(_mean);
+            _std2 = std::abs(_std2 / count - _mean * _mean);
+            variance = static_cast<double>(_std2);
+        } else {
+            mean = 0;
+            variance = 0;
+        }
+    }
 }

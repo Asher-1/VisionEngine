@@ -6,7 +6,10 @@
 #include <opencv2/imgproc.hpp>
 
 #if defined(_OPENMP)
+
 #include <omp.h>
+#include <numeric>
+
 #endif
 
 #if defined(__ANDROID__)
@@ -19,6 +22,9 @@ namespace mirror {
 #define kFaceNameDim 256
 
     // common
+    // 0 = all cores enabled(default)
+    // 1 = only little clusters enabled
+    // 2 = only big clusters enabled
     const int CUSTOM_THREAD_NUMBER = 2;
     namespace ErrorCode {
         const int SUCCESS = 0;
@@ -207,6 +213,22 @@ namespace mirror {
         }
         return 0;
     }
+
+    template<typename T>
+    void ComputeMeanAndVariance(const std::vector<T> &inputs, T &mean, T *variance = nullptr) {
+        T sum = std::accumulate(std::begin(inputs), std::end(inputs), static_cast<T>(0.0));
+        mean = static_cast<T>(sum / inputs.size());
+
+        if (variance) {
+            T accum = 0;
+            std::for_each(std::begin(inputs), std::end(inputs), [&](const T d) {
+                accum += (d - mean) * (d - mean);
+            });
+            *variance = static_cast<T>(accum / (inputs.size() /* - 1 */));
+        }
+    }
+
+    void ComputeMeanAndVariance2(const std::vector<float> &inputs, double &mean, double &variance);
 
     float CalculateSimilarity(const std::vector<float> &feature1, const std::vector<float> &feature2);
 

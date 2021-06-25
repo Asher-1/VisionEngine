@@ -250,9 +250,50 @@ namespace mirror {
                 destroyFaceLandMarker();
             }
 
+            PrintConfigurations(params);
+
             initialized_ = true;
 
             return 0;
+        }
+
+        inline void PrintConfigurations(const FaceEigenParams &params) const {
+            std::cout << "--------------Configuration--------------" << std::endl;
+            std::string configureInfo;
+            configureInfo += std::string("GPU: ") + (params.gpuEnabled ? "True" : "False");
+            configureInfo += std::string("\nVerbose: ") + (params.verbose ? "True" : "False");
+            configureInfo += "\nModel path: " + params.modelPath;
+            configureInfo += "\nFace feature database path: " + params.faceFeaturePath;
+
+            configureInfo += std::string("\nFace detector Enabled: ") +
+                             (params.faceDetectorEnabled ? "True" : "False");
+            configureInfo += std::string("\nFace recognizer Enabled: ") +
+                             (params.faceRecognizerEnabled ? "True" : "False");
+            configureInfo += std::string("\nFace anti detector Enabled: ") +
+                             (params.faceAntiSpoofingEnabled ? "True" : "False");
+            configureInfo += std::string("\nFace landmarker Enabled: ") +
+                             (params.faceLandMarkerEnabled ? "True" : "False");
+
+            if (detector_) {
+                configureInfo += "\nFace detector type: " + GetDetectorTypeName(detector_->getType());
+            }
+
+            if (recognizer_) {
+                configureInfo += "\nFace recognizer type: " + GetRecognizerTypeName(recognizer_->getType());
+            }
+
+            if (faceAntiSpoofing_) {
+                configureInfo += "\nFace anti detector type: " +
+                                 GetAntiSpoofingTypeName(faceAntiSpoofing_->getType());
+            }
+
+            if (landmarker_) {
+                configureInfo += "\nFace landmarker type: " +
+                                 GetLandMarkerTypeName(landmarker_->getType());
+            }
+
+            std::cout << configureInfo << std::endl;
+            std::cout << "-----------------------------------------" << std::endl;
         }
 
         inline int Track(const std::vector<FaceInfo> &curr_faces, std::vector<TrackedFaceInfo> &faces) {

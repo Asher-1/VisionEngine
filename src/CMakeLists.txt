@@ -6,7 +6,7 @@ file(GLOB_RECURSE SRC_FILES
 
 message(${SRC_FILES})
 
-SET(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Release")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fPIC -std=c++11 -fopenmp")
 add_library(VisionEngine STATIC ${SRC_FILES})
@@ -17,7 +17,7 @@ if (MIRROR_BUILD_ANDROID)
 else ()
     set(NCNN_PATH ${CMAKE_SOURCE_DIR}/lib/ncnn-20210525-ubuntu-1804)
     set(OPENCV_PATH ${CMAKE_SOURCE_DIR}/lib/opencv-mobile-4.5.1-android)
-endif()
+endif ()
 
 if (MSVC)
     message("windows")
@@ -31,7 +31,7 @@ else ()
     else ()
         if (MIRROR_BUILD_ANDROID)
             set(OpenCV_DIR ${OPENCV_PATH}/sdk/native/jni/abi-${ANDROID_ABI})
-        else()
+        else ()
             set(OpenCV_DIR ${OPENCV_PATH}/lib/cmake/opencv4)
         endif ()
         find_package(OpenCV REQUIRED core imgproc highgui)
@@ -41,7 +41,7 @@ else ()
     if (MIRROR_BUILD_ANDROID)
         include_directories(${NCNN_PATH}/${ANDROID_ABI}/include)
         set(ncnn_DIR ${NCNN_PATH}/${ANDROID_ABI}/lib/cmake/ncnn)
-    else()
+    else ()
         include_directories(${NCNN_PATH}/include)
         set(ncnn_DIR ${NCNN_PATH}/lib/cmake/ncnn)
     endif ()
@@ -101,7 +101,7 @@ target_include_directories(VisionEngine
         )
 
 if (MIRROR_INSTALL_SDK)
-    install(TARGETS VisionEngine EXPORT VisionEngine ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib)
+    # install head files
     install(FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/common/common.h
             ${CMAKE_CURRENT_SOURCE_DIR}/utility/VisionTools.h
@@ -110,6 +110,30 @@ if (MIRROR_INSTALL_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/classifier/ClassifierEngine.h
             DESTINATION ${PROJECT_BINARY_DIR}/include
             )
+
+    # install library
+    install(TARGETS VisionEngine EXPORT VisionEngine ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib)
+
+    if (MIRROR_INSTALL_EXAMPLES)
+        # install binaries
+        if (MSVC)
+            install(FILES
+                    ${PROJECT_BINARY_DIR}/src/face.exe
+                    ${PROJECT_BINARY_DIR}/src/object.exe
+                    ${PROJECT_BINARY_DIR}/src/classifier.exe
+                    DESTINATION ${PROJECT_BINARY_DIR}/bin
+                    )
+        else ()
+            install(FILES
+                    ${PROJECT_BINARY_DIR}/src/face
+                    ${PROJECT_BINARY_DIR}/src/object
+                    ${PROJECT_BINARY_DIR}/src/classifier
+                    DESTINATION ${PROJECT_BINARY_DIR}/bin
+                    )
+        endif ()
+    endif ()
+
+
 endif ()
 
 if (MIRROR_BUILD_FACE)

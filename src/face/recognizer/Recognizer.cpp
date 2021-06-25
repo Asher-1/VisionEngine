@@ -59,7 +59,10 @@ namespace mirror {
 
         this->net_->clear();
 
+        ncnn::Option opt;
+
 #if defined __ANDROID__
+        opt.lightmode = true;
         ncnn::set_cpu_powersave(CUSTOM_THREAD_NUMBER);
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
@@ -68,14 +71,17 @@ namespace mirror {
             num_threads = params.threadNum;
         }
         ncnn::set_omp_num_threads(num_threads);
-        this->net_->opt = ncnn::Option();
+        opt.num_threads = num_threads;
 
 #if NCNN_VULKAN
         this->gpu_mode_ = params.gpuEnabled;
-        this->net_->opt.use_vulkan_compute = this->gpu_mode_;
+        if (ncnn::get_gpu_count() != 0) {
+            opt.use_vulkan_compute = this->gpu_mode_;
+        }
 #endif // NCNN_VULKAN
 
-        this->net_->opt.num_threads = num_threads;
+        this->net_->opt = opt;
+
 #if defined __ANDROID__
         int flag = this->loadModel(params.mgr);
 #else
@@ -124,6 +130,17 @@ namespace mirror {
         if (flag != 0) {
             std::cout << "extract failed." << std::endl;
         } else {
+            //    This is a normalize function before calculating the cosine distance. Experiment has proven it can destory the
+            //    original distribution in order to make two feature more distinguishable.
+            //    mean value is set to 0 and std is set to 1
+            float mean;
+            float variance;
+            ComputeMeanAndVariance<float>(feature, mean, &variance);
+            float stdDev = std::sqrt(variance);
+            for (std::size_t i = 0; i < feature.size(); ++i) {
+                feature.at(i) = (feature.at(i) - mean) / stdDev;
+            }
+
             if (verbose_) {
                 std::cout << "end extract feature." << std::endl;
             }

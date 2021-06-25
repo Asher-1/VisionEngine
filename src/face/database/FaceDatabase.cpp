@@ -12,7 +12,7 @@ namespace mirror {
 
         ~Impl() = default;
 
-        int Find(std::vector<std::string>& names) const {
+        int Find(std::vector<std::string> &names) const {
             names.clear();
             for (auto const &line : db_) {
                 names.emplace_back(line.first);
@@ -20,7 +20,7 @@ namespace mirror {
             return names.empty() ? ErrorCode::EMPTY_DATA_ERROR : 0;
         }
 
-        bool Save(StreamWriter &writer) const {
+        int Save(StreamWriter &writer) const {
             const uint64_t num_faces = db_.size();
             const uint64_t dim_feat = kFaceFeatureDim;
             const uint64_t dim_name = kFaceNameDim;
@@ -39,10 +39,10 @@ namespace mirror {
             }
 
             std::cout << "FaceDatabase Saved " << num_faces << " faces" << std::endl;
-            return true;
+            return 0;
         }
 
-        bool Load(StreamReader &reader) {
+        int Load(StreamReader &reader) {
             uint64_t num_faces = 0;
             const uint64_t dim_feat = kFaceFeatureDim;
             const uint64_t dim_name = kFaceNameDim;
@@ -68,11 +68,15 @@ namespace mirror {
 
             std::cout << "FaceDatabase Loaded " << num_faces << " faces" << std::endl;
 
-            return true;
+            return 0;
         }
 
 
         int64_t Insert(const std::string &name, const std::vector<float> &feat) {
+            if (feat.size() != kFaceFeatureDim) {
+                return ErrorCode::DIMENSION_MISS_MATCH_ERROR;
+            }
+
             int64_t new_index = max_index_;
             if (db_.find(name) == db_.end()) {
                 ++max_index_;
@@ -122,9 +126,15 @@ namespace mirror {
         }
 
         int QueryTop(const std::vector<float> &feat, QueryResult &query_result) const {
+            if (db_.empty()) {
+                query_result.name_ = "unknown";
+                query_result.sim_ = 0;
+                return ErrorCode::EMPTY_DATA_ERROR;
+            }
+
             std::vector<std::pair<std::string, float>> result(db_.size());
             {
-                size_t i = 0;
+                std::size_t i = 0;
                 for (auto &line : db_) {
                     result[i].first = line.first;
                     result[i].second = Compare(feat, line.second);
@@ -133,7 +143,9 @@ namespace mirror {
             }
 
             if (result.empty()) {
-                return ErrorCode::EMPTY_INPUT_ERROR;
+                query_result.name_ = "unknown";
+                query_result.sim_ = 0;
+                return ErrorCode::EMPTY_DATA_ERROR;
             }
 
             std::partial_sort(result.begin(), result.begin() + 1, result.end(), [](
@@ -166,21 +178,24 @@ namespace mirror {
         }
     }
 
-    bool FaceDatabase::Save(const char *path) const {
+    int FaceDatabase::Save(const char *path) const {
         std::cout << "start save data." << std::endl;
         std::string db_name = std::string(path) + "/db";
         FileWriter ofile(db_name, FileWriter::Binary);
         if (!ofile.is_opened()) {
-            std::cout << "open database failed." << std::endl;
-            return false;
+            std::cout << "Open database failed (file not found)." << std::endl;
+            return ErrorCode::NOT_FOUND_ERROR;
         }
         return impl_->Save(ofile);
     }
 
-    bool FaceDatabase::Load(const char *path) {
+    int FaceDatabase::Load(const char *path) {
         std::string db_name = std::string(path) + "/db";
         FileReader ifile(db_name, FileWriter::Binary);
-        if (!ifile.is_opened()) return false;
+        if (!ifile.is_opened()) {
+            std::cout << "Open database failed (file not found)." << std::endl;
+            return ErrorCode::NOT_FOUND_ERROR;
+        }
         return impl_->Load(ifile);
     }
 
@@ -200,7 +215,7 @@ namespace mirror {
         impl_->Clear();
     }
 
-    int FaceDatabase::Find(std::vector<std::string>& names) const {
+    int FaceDatabase::Find(std::vector<std::string> &names) const {
         return impl_->Find(names);
     }
 

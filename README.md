@@ -17,7 +17,7 @@ https://github.com/nihui/opencv-mobile
 * Extract opencv-mobile-XYZ-platform.zip into **lib/** and change the **OpenCV_DIR** path to yours in **src/CMakeLists.txt**
 ## 5. compile the project and enjoy!
 ```
->> cd VisionEngine && mkdir build && cd build && make -j4 
+>> cd VisionEngine && mkdir build && cd build && cmake .. && make -j4 
 ```
 ## 5. run the project:
 ```

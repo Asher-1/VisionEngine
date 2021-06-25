@@ -8,4 +8,5 @@ vs2019
 .vscode
 lib/ncnn*
 lib/opencv*
-scripts/android/visionEngine
+scripts/android/visionEngine*
+scripts/linux/visionEngine*

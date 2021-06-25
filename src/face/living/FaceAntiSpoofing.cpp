@@ -48,8 +48,10 @@ namespace mirror {
         }
 
         clearNets();
+        ncnn::Option opt;
 
 #if defined __ANDROID__
+        opt.lightmode = true;
         ncnn::set_cpu_powersave(CUSTOM_THREAD_NUMBER);
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
@@ -58,19 +60,19 @@ namespace mirror {
             num_threads = params.threadNum;
         }
         ncnn::set_omp_num_threads(num_threads);
+        opt.num_threads = num_threads;
 
 #if NCNN_VULKAN
         this->gpu_mode_ = params.gpuEnabled;
+        if (ncnn::get_gpu_count() != 0) {
+            opt.use_vulkan_compute = this->gpu_mode_;
+        }
 #endif // NCNN_VULKAN
 
         model_num_ = static_cast<int>(configs_.size());
         for (int i = 0; i < model_num_; ++i) {
             auto net = new ncnn::Net();
-            net->opt = ncnn::Option();
-            net->opt.num_threads = num_threads;
-#if NCNN_VULKAN
-            net->opt.use_vulkan_compute = this->gpu_mode_;
-#endif // NCNN_VULKAN
+            net->opt = opt;
             nets_.emplace_back(net);
         }
 

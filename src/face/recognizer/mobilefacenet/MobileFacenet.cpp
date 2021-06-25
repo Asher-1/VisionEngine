@@ -1,6 +1,6 @@
 #include "MobileFacenet.h"
 #include <string>
-
+#include <iostream>
 #include <ncnn/net.h>
 
 namespace mirror {
@@ -36,6 +36,10 @@ namespace mirror {
         ex.input("data", in);
         ncnn::Mat out;
         ex.extract("fc1", out);
+
+#if defined(_OPENMP)
+#pragma omp parallel for num_threads(CUSTOM_THREAD_NUMBER)
+#endif
         for (int i = 0; i < faceFaceFeatureDim_; ++i) {
             feature.at(i) = out[i];
         }

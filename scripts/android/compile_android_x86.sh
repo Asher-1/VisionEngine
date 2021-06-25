@@ -5,7 +5,7 @@ mkdir -p build-android-x86
 cd build-android-x86
 
 NCNN_VULKAN=ON
-ANDROID_NDK="/media/yons/data/develop/Android/Sdk/ndk/22.1.7171670"
+ANDROID_NDK="/media/yons/data/develop/Android/Sdk/ndk/21.4.7075529"
 
 # If you want to enable Vulkan, platform api version >= android-24 is needed
 cmake -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
