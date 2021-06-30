@@ -30,6 +30,9 @@ namespace mirror {
 
             if (!object_detector_) {
                 switch (params.objectDetectorType) {
+                    case YOLOV4:
+                        object_detector_ = Yolov4Factory().createDetector();
+                        break;
                     case YOLOV5:
                         object_detector_ = Yolov5Factory().createDetector();
                         break;
@@ -54,7 +57,7 @@ namespace mirror {
             return 0;
         }
 
-        inline int DetectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
+        inline int Detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
             if (!initialized_ || !object_detector_) {
                 std::cout << "object detector model uninitialized!" << std::endl;
                 return ErrorCode::UNINITIALIZED_ERROR;
@@ -109,8 +112,8 @@ namespace mirror {
         return impl_->LoadModel(params);
     }
 
-    int ObjectEngine::detectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
-        return impl_->DetectObject(img_src, objects);
+    int ObjectEngine::detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
+        return impl_->Detect(img_src, objects);
     }
 
 }

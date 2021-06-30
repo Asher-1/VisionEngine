@@ -138,17 +138,15 @@ namespace mirror {
     }
 
     int Scrfd::loadModel(const char *root_path) {
-        std::string sub_dir = "/detectors/scrfd";
-        std::string fd_param = std::string(root_path) + sub_dir + "/scrfd_500m_kps-opt2.param";
-        std::string fd_bin = std::string(root_path) + sub_dir + "/scrfd_500m_kps-opt2.bin";
+        std::string fd_param = std::string(root_path) + modelPath_ + "/scrfd/scrfd_500m_kps-opt2.param";
+        std::string fd_bin = std::string(root_path) + modelPath_ + "/scrfd/scrfd_500m_kps-opt2.bin";
         return Super::loadModel(fd_param.c_str(), fd_bin.c_str());
     }
 
 #if defined __ANDROID__
     int Scrfd::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/detectors/scrfd";
-        std::string fd_param = sub_dir + "/scrfd_500m_kps-opt2.param";
-        std::string fd_bin = sub_dir + "/scrfd_500m_kps-opt2.bin";
+        std::string fd_param = "models" + modelPath_ + "/scrfd/scrfd_500m_kps-opt2.param";
+        std::string fd_bin = "models" + modelPath_ + "/scrfd/scrfd_500m_kps-opt2.bin";
         return Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
     }
 #endif
@@ -188,6 +186,9 @@ namespace mirror {
         in_pad.substract_mean_normalize(mean_vals_, norm_vals_);
 
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ex.input("input.1", in_pad);
 
         faces.clear();

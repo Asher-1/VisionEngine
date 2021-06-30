@@ -59,6 +59,7 @@ namespace mirror {
         bool initialized_ = false;
         float faceLivingThreshold_ = 0.93;
         cv::Size inputSize_ = {80, 80};
+        std::string modelPath_;
     };
 
     class FaceAntiSpoofingFactory {

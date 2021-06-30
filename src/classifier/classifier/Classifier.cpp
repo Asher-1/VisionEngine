@@ -15,7 +15,8 @@ namespace mirror {
             verbose_(false),
             gpu_mode_(false),
             initialized_(false),
-            inputSize_(cv::Size(224, 224)) {
+            inputSize_(cv::Size(224, 224)),
+            modelPath_("/classifiers") {
         class_names_.clear();
     }
 
@@ -87,7 +88,10 @@ namespace mirror {
 
         this->net_->clear();
 
+        ncnn::Option opt;
+
 #if defined __ANDROID__
+        opt.lightmode = true;
         ncnn::set_cpu_powersave(CUSTOM_THREAD_NUMBER);
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
@@ -96,15 +100,21 @@ namespace mirror {
             num_threads = params.thread_num;
         }
         ncnn::set_omp_num_threads(num_threads);
-        this->net_->opt = ncnn::Option();
+        opt.num_threads = num_threads;
 
 #if NCNN_VULKAN
-        this->gpu_mode_ = params.gpuEnabled;
-        this->net_->opt.use_vulkan_compute = this->gpu_mode_;
+        this->gpu_mode_ = params.gpuEnabled && ncnn::get_gpu_count() > 0;
+        opt.use_vulkan_compute = this->gpu_mode_;
 #endif // NCNN_VULKAN
 
-        this->net_->opt.num_threads = num_threads;
-        int flag = this->loadModel(params.model_path.c_str());
+        this->net_->opt = opt;
+
+#if defined __ANDROID__
+        int flag = this->loadModel(params.mgr);
+#else
+        int flag = this->loadModel(params.modelPath.c_str());
+#endif
+
         if (flag != 0) {
             initialized_ = false;
             std::cout << "load classifier model: " <<

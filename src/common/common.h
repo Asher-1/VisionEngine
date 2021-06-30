@@ -56,7 +56,7 @@ namespace mirror {
         bool verbose = false;
         bool thread_num = -1;
         bool gpuEnabled = false;
-        std::string model_path;
+        std::string modelPath;
         ClassifierType classifierType = ClassifierType::MOBILE_NET;
 #if defined __ANDROID__
         AAssetManager* mgr = nullptr;
@@ -65,8 +65,9 @@ namespace mirror {
 
     // for object module
     enum ObjectDetectorType {
-        YOLOV5 = 0,
-        MOBILENET_SSD = 1,
+        YOLOV4 = 0,
+        YOLOV5 = 1,
+        MOBILENET_SSD = 2,
     };
 
     std::string GetObjectDetectorTypeName(ObjectDetectorType type);
@@ -78,17 +79,76 @@ namespace mirror {
     };
 
     struct ObjectEigenParams {
-        std::string model_path;
+        std::string modelPath;
         bool gpuEnabled = false;
         bool thread_num = -1;
         bool verbose = false;
         float nmsThreshold = -1.0f;
         float scoreThreshold = -1.0f;
-        ObjectDetectorType objectDetectorType = ObjectDetectorType::MOBILENET_SSD;
+        int modeType = 2;
+        ObjectDetectorType objectDetectorType = ObjectDetectorType::YOLOV4;
 #if defined __ANDROID__
         AAssetManager* mgr = nullptr;
 #endif
     };
+
+    // for pose estimation
+    enum PoseEstimationType {
+        SIMPLE_POSE = 0,
+        LIGHT_OPEN_POSE = 1,
+    };
+
+    std::string GetPoseEstimationTypeName(PoseEstimationType type);
+
+    struct KeyPoint {
+        cv::Point2f p;
+        float prob;
+    };
+    struct PoseResult {
+        std::vector<KeyPoint> keyPoints;
+        ObjectInfo boxInfos;
+    };
+    struct PoseEigenParams {
+        std::string modelPath;
+        bool gpuEnabled = false;
+        bool thread_num = -1;
+        bool verbose = false;
+        float nmsThreshold = -1.0f;
+        float scoreThreshold = -1.0f;
+        PoseEstimationType poseEstimationType = PoseEstimationType::SIMPLE_POSE;
+#if defined __ANDROID__
+        AAssetManager* mgr = nullptr;
+#endif
+    };
+
+
+    // for mask segmentation
+    enum SegmentType {
+        YOLACT_SEG = 0,
+        MOBILENETV3_SEG = 1,
+    };
+
+    std::string GetSegmentTypeName(SegmentType type);
+
+    struct SegmentInfo {
+        ObjectInfo boxInfo;
+        std::vector<float> maskData;
+        cv::Mat mask;
+    };
+
+    struct SegmentEigenParams {
+        std::string modelPath;
+        bool gpuEnabled = false;
+        bool thread_num = -1;
+        bool verbose = false;
+        float nmsThreshold = -1.0f;
+        float scoreThreshold = -1.0f;
+        SegmentType segmentType = SegmentType::YOLACT_SEG;
+#if defined __ANDROID__
+        AAssetManager* mgr = nullptr;
+#endif
+    };
+
 
     // for face module
     enum FaceAntiSpoofingType {

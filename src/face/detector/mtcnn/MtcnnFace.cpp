@@ -33,9 +33,8 @@ namespace mirror {
 
     int MtcnnFace::loadModel(const char *root_path) {
         if (!pnet_ || !rnet_ || !onet_) return ErrorCode::NULL_ERROR;
-        std::string sub_dir = "/detectors/mtcnn";
-        std::string pnet_param = std::string(root_path) + sub_dir + "/pnet.param";
-        std::string pnet_bin = std::string(root_path) + sub_dir + "/pnet.bin";
+        std::string pnet_param = std::string(root_path) + modelPath_ + "/mtcnn/pnet.param";
+        std::string pnet_bin = std::string(root_path) + modelPath_ + "/mtcnn/pnet.bin";
 
         if (pnet_->load_param(pnet_param.c_str()) == -1 ||
             pnet_->load_model(pnet_bin.c_str()) == -1) {
@@ -44,8 +43,8 @@ namespace mirror {
             std::cout << "pnet bin: " << pnet_bin << std::endl;
             return ErrorCode::MODEL_LOAD_ERROR;
         }
-        std::string rnet_param = std::string(root_path) + sub_dir + "/rnet.param";
-        std::string rnet_bin = std::string(root_path) + sub_dir + "/rnet.bin";
+        std::string rnet_param = std::string(root_path) + modelPath_ + "/mtcnn/rnet.param";
+        std::string rnet_bin = std::string(root_path) + modelPath_ + "/mtcnn/rnet.bin";
         if (rnet_->load_param(rnet_param.c_str()) == -1 ||
             rnet_->load_model(rnet_bin.c_str()) == -1) {
             std::cout << "Load rnet model failed." << std::endl;
@@ -53,8 +52,8 @@ namespace mirror {
             std::cout << "rnet bin: " << rnet_bin << std::endl;
             return ErrorCode::MODEL_LOAD_ERROR;
         }
-        std::string onet_param = std::string(root_path) + sub_dir + "/onet.param";
-        std::string onet_bin = std::string(root_path) + sub_dir + "/onet.bin";
+        std::string onet_param = std::string(root_path) + modelPath_ + "/mtcnn/onet.param";
+        std::string onet_bin = std::string(root_path) + modelPath_ + "/mtcnn/onet.bin";
         if (onet_->load_param(onet_param.c_str()) == -1 ||
             onet_->load_model(onet_bin.c_str()) == -1) {
             std::cout << "Load onet model failed." << std::endl;
@@ -69,10 +68,8 @@ namespace mirror {
     int MtcnnFace::loadModel(AAssetManager *mgr) {
         if (!pnet_ || !rnet_ || !onet_) return ErrorCode::NULL_ERROR;
 
-        std::string sub_dir = "models/detectors/mtcnn";
-
-        std::string pnet_param = sub_dir + "/pnet.param";
-        std::string pnet_bin = sub_dir + "/pnet.bin";
+        std::string pnet_param = "models" + modelPath_ + "/mtcnn/pnet.param";
+        std::string pnet_bin = "models" + modelPath_ + "/mtcnn/pnet.bin";
         if (net_->load_param(mgr, pnet_param.c_str()) == -1 ||
             net_->load_model(mgr, pnet_bin.c_str()) == -1) {
             std::cout << "Load pnet model failed." << std::endl;
@@ -80,8 +77,8 @@ namespace mirror {
             std::cout << "pnet bin: " << pnet_bin << std::endl;
             return ErrorCode::MODEL_LOAD_ERROR;
         }
-        std::string rnet_param = sub_dir + "/rnet.param";
-        std::string rnet_bin = sub_dir + "/rnet.bin";
+        std::string rnet_param = "models" + modelPath_ + "/mtcnn/rnet.param";
+        std::string rnet_bin = "models" + modelPath_ + "/mtcnn/rnet.bin";
         if (rnet_->load_param(mgr, rnet_param.c_str()) == -1 ||
             rnet_->load_model(mgr, rnet_bin.c_str()) == -1) {
             std::cout << "Load rnet model failed." << std::endl;
@@ -89,8 +86,8 @@ namespace mirror {
             std::cout << "rnet bin: " << rnet_bin << std::endl;
             return ErrorCode::MODEL_LOAD_ERROR;
         }
-        std::string onet_param = sub_dir + "/onet.param";
-        std::string onet_bin = sub_dir + "/onet.bin";
+        std::string onet_param = "models" + modelPath_ + "/mtcnn/onet.param";
+        std::string onet_bin = "models" + modelPath_ + "/mtcnn/onet.bin";
         if (onet_->load_param(mgr, onet_param.c_str()) == -1 ||
             onet_->load_model(mgr, onet_bin.c_str()) == -1) {
             std::cout << "Load onet model failed." << std::endl;
@@ -154,6 +151,9 @@ namespace mirror {
             ncnn::Extractor ex = pnet_->create_extractor();
             //ex.set_num_threads(2);
             ex.set_light_mode(true);
+#if NCNN_VULKAN
+            ex.set_vulkan_compute(this->gpu_mode_);
+#endif
             ex.input("data", img_resized);
             ncnn::Mat score_mat, location_mat;
             ex.extract("prob1", score_mat);
@@ -204,11 +204,15 @@ namespace mirror {
         for (const auto &first_bboxe : first_bboxes) {
             cv::Rect face = first_bboxe.location_ & cv::Rect(0, 0, img_in.w, img_in.h);
             ncnn::Mat img_face, img_resized;
-            ncnn::copy_cut_border(img_in, img_face, face.y, img_in.h - face.br().y, face.x, img_in.w - face.br().x);
+            ncnn::copy_cut_border(img_in, img_face, face.y, img_in.h - face.br().y,
+                                  face.x, img_in.w - face.br().x);
             ncnn::resize_bilinear(img_face, img_resized, 24, 24);
             ncnn::Extractor ex = rnet_->create_extractor();
             ex.set_light_mode(true);
             ex.set_num_threads(2);
+#if NCNN_VULKAN
+            ex.set_vulkan_compute(this->gpu_mode_);
+#endif
             ex.input("data", img_resized);
             ncnn::Mat score_mat, location_mat;
             ex.extract("prob1", score_mat);
@@ -248,6 +252,9 @@ namespace mirror {
             ncnn::Extractor ex = onet_->create_extractor();
             ex.set_light_mode(true);
             ex.set_num_threads(2);
+#if NCNN_VULKAN
+            ex.set_vulkan_compute(this->gpu_mode_);
+#endif
             ex.input("data", img_resized);
             ncnn::Mat score_mat, location_mat, keypoints_mat;
             ex.extract("prob1", score_mat);

@@ -11,17 +11,15 @@ namespace mirror {
     }
 
     int InsightfaceLandMarker::loadModel(const char *root_path) {
-        std::string sub_dir = "/landmarkers/insightface";
-        std::string fl_param = std::string(root_path) + sub_dir + "/2d106.param";
-        std::string fl_bin = std::string(root_path) + sub_dir + "/2d106.bin";
+        std::string fl_param = std::string(root_path) + modelPath_ + "/insightface/2d106.param";
+        std::string fl_bin = std::string(root_path) + modelPath_ + "/insightface/2d106.bin";
         return Super::loadModel(fl_param.c_str(), fl_bin.c_str());
     }
 
 #if defined __ANDROID__
     int InsightfaceLandMarker::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/landmarkers/insightface";
-        std::string fl_param = sub_dir + "/2d106.param";
-        std::string fl_bin = sub_dir + "/2d106.bin";
+        std::string fl_param = "models" + modelPath_ + "/insightface/2d106.param";
+        std::string fl_bin = "models" + modelPath_ + "/insightface/2d106.bin";
         return Super::loadModel(mgr, fl_param.c_str(), fl_bin.c_str());
     }
 #endif
@@ -40,10 +38,14 @@ namespace mirror {
         cv::Mat img_face = img_src(face_enlarged).clone();
 
         // 4 do inference
-        ncnn::Extractor ex = net_->create_extractor();
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_face.data,
                                                      ncnn::Mat::PIXEL_BGR2RGB, img_face.cols,
                                                      img_face.rows, inputSize_.width, inputSize_.height);
+
+        ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ex.input("data", in);
         ncnn::Mat out;
         ex.extract("fc1", out);

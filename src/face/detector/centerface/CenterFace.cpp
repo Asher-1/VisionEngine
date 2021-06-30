@@ -11,18 +11,16 @@ namespace mirror {
     }
 
     int CenterFace::loadModel(const char *root_path) {
-        std::string sub_dir = "/detectors/centerface";
-        std::string fd_param = std::string(root_path) + sub_dir + "/centerface.param";
-        std::string fd_bin = std::string(root_path) + sub_dir + "/centerface.bin";
+        std::string fd_param = std::string(root_path) + modelPath_ + "/centerface/centerface.param";
+        std::string fd_bin = std::string(root_path) + modelPath_ + "/centerface/centerface.bin";
         return Super::loadModel(fd_param.c_str(), fd_bin.c_str());
     }
 
 
 #if defined __ANDROID__
     int CenterFace::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/detectors/centerface";
-        std::string fd_param = sub_dir + "/centerface.param";
-        std::string fd_bin = sub_dir + "/centerface.bin";
+        std::string fd_param = "models" + modelPath_ + "/centerface/centerface.param";
+        std::string fd_bin = "models" + modelPath_ + "/centerface/centerface.bin";
         return Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
     }
 #endif
@@ -40,6 +38,9 @@ namespace mirror {
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_src.data, ncnn::Mat::PIXEL_BGR2RGB,
                                                      img_width, img_height, img_width_new, img_height_new);
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ex.input("input.1", in);
         ncnn::Mat mat_heatmap, mat_scale, mat_offset, mat_landmark;
         ex.extract("537", mat_heatmap);

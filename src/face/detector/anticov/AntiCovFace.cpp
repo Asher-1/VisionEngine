@@ -11,12 +11,10 @@ namespace mirror {
     }
 
     int AntiCovFace::loadModel(const char *root_path) {
-        std::string sub_dir = "/detectors/anticov";
-        std::string fd_param = std::string(root_path) + sub_dir + "/mask.param";
-        std::string fd_bin = std::string(root_path) + sub_dir + "/mask.bin";
+        std::string fd_param = std::string(root_path) + modelPath_ + "/anticov/mask.param";
+        std::string fd_bin = std::string(root_path) + modelPath_ + "/anticov/mask.bin";
         int flag = Super::loadModel(fd_param.c_str(), fd_bin.c_str());
-        if (flag != 0)
-        {
+        if (flag != 0) {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
 
@@ -37,9 +35,8 @@ namespace mirror {
 
 #if defined __ANDROID__
     int AntiCovFace::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/detectors/anticov";
-        std::string fd_param = sub_dir + "/mask.param";
-        std::string fd_bin = sub_dir + "/mask.bin";
+        std::string fd_param = "models" + modelPath_ + "/anticov/mask.param";
+        std::string fd_bin = "models" + modelPath_ + "/anticov/mask.bin";
         int flag = Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
         if (flag != 0)
         {
@@ -70,10 +67,33 @@ namespace mirror {
         int img_height = img_cpy.rows;
         float factor_x = static_cast<float>(img_width) / inputSize_.width;
         float factor_y = static_cast<float>(img_height) / inputSize_.height;
-        ncnn::Extractor ex = net_->create_extractor();
+
+        // pad to multiple of 32
+        int w = img_width;
+        int h = img_height;
+        if (w > h) {
+            w = inputSize_.width;
+            h = h / factor_x;
+            factor_y = factor_x;
+        } else {
+            h = inputSize_.height;
+            w = w / factor_y;
+            factor_x = factor_y;
+        }
+
+//        ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_cpy.data,
+//                                                     ncnn::Mat::PIXEL_BGR2RGB, img_width, img_height,
+//                                                     inputSize_.width, inputSize_.height);
+
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_cpy.data,
-                                                     ncnn::Mat::PIXEL_BGR2RGB, img_width, img_height, inputSize_.width,
-                                                     inputSize_.height);
+                                                     ncnn::Mat::PIXEL_BGR2RGB,
+                                                     img_width, img_height,
+                                                     w, h);
+
+        ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ex.input("data", in);
 
         faces.clear();

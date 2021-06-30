@@ -22,10 +22,9 @@ namespace mirror {
     }
 
     int LiveDetector::loadModel(const char *root_path) {
-        std::string sub_dir = "/living/live/";
         for (std::size_t i = 0; i < nets_.size(); ++i) {
-            std::string model_param = std::string(root_path) + sub_dir + configs_[i].name + ".param";
-            std::string model_bin = std::string(root_path) + sub_dir + configs_[i].name + ".bin";
+            std::string model_param = std::string(root_path) + modelPath_ + "/live/" + configs_[i].name + ".param";
+            std::string model_bin = std::string(root_path) + modelPath_ + "/live/" + configs_[i].name + ".bin";
             if (!nets_[i]) return ErrorCode::NULL_ERROR;
 
             if (nets_[i]->load_param(model_param.c_str()) == -1 ||
@@ -38,10 +37,10 @@ namespace mirror {
 
 #if defined __ANDROID__
     int LiveDetector::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/living/live/";
+        std::string sub_dir = "models";
         for (std::size_t i = 0; i < nets_.size(); ++i) {
-            std::string model_param = sub_dir + configs_[i].name + ".param";
-            std::string model_bin = sub_dir + configs_[i].name + ".bin";
+            std::string model_param = sub_dir + modelPath_ + "/live/" + configs_[i].name + ".param";
+            std::string model_bin = sub_dir + modelPath_ + "/live/" + configs_[i].name + ".bin";
             if (!nets_[i]) return ErrorCode::NULL_ERROR;
 
             if (nets_[i]->load_param(mgr, model_param.c_str()) == -1 ||
@@ -69,6 +68,9 @@ namespace mirror {
 
             ncnn::Extractor extractor = nets_[i]->create_extractor();
             extractor.set_light_mode(true);
+#if NCNN_VULKAN
+            extractor.set_vulkan_compute(this->gpu_mode_);
+#endif
 
             extractor.input(net_input_name_.c_str(), in);
             ncnn::Mat out;

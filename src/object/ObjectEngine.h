@@ -25,7 +25,7 @@ public:
 	OBJECT_API void destroyEngine();
 
 	OBJECT_API int loadModel(const ObjectEigenParams &params);
-	OBJECT_API int detectObject(const cv::Mat& img_src, std::vector<ObjectInfo>& objects) const;
+	OBJECT_API int detect(const cv::Mat& img_src, std::vector<ObjectInfo>& objects) const;
 
 private:
     //! Default constructor

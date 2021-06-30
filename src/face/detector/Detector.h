@@ -48,6 +48,7 @@ namespace mirror {
         bool has_kps_ = true;
         float iouThreshold_ = 0.45f;
         float scoreThreshold_ = 0.5f;
+        std::string modelPath_;
     };
 
     class DetectorFactory {

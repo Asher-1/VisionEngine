@@ -15,7 +15,8 @@ namespace mirror {
             verbose_(false),
             gpu_mode_(false),
             initialized_(false),
-            inputSize_(cv::Size(112, 112)) {
+            inputSize_(cv::Size(112, 112)),
+            modelPath_("/face/landmarkers") {
     }
 
     LandMarker::~LandMarker() {

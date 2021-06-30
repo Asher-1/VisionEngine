@@ -19,7 +19,8 @@ namespace mirror {
             initialized_(false),
             has_kps_(true),
             iouThreshold_(0.45f),
-            scoreThreshold_(0.5f) {
+            scoreThreshold_(0.5f),
+            modelPath_("/face/detectors") {
     }
 
     Detector::~Detector() {

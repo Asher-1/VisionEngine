@@ -10,17 +10,15 @@ namespace mirror {
     }
 
     int ZQLandMarker::loadModel(const char *root_path) {
-        std::string sub_dir = "/landmarkers/zq";
-        std::string fl_param = std::string(root_path) + sub_dir + "/fl.param";
-        std::string fl_bin = std::string(root_path) + sub_dir + "/fl.bin";
+        std::string fl_param = std::string(root_path) + modelPath_ + "/zq/fl.param";
+        std::string fl_bin = std::string(root_path) + modelPath_ + "/zq/fl.bin";
         return Super::loadModel(fl_param.c_str(), fl_bin.c_str());
     }
 
 #if defined __ANDROID__
     int ZQLandMarker::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/landmarkers/zq";
-        std::string fl_param = sub_dir + "/fl.param";
-        std::string fl_bin = sub_dir + "/fl.bin";
+        std::string fl_param = "models" + modelPath_ + "/zq/fl.param";
+        std::string fl_bin = "models" + modelPath_ + "/zq/fl.bin";
         return Super::loadModel(mgr, fl_param.c_str(), fl_bin.c_str());
     }
 #endif
@@ -30,6 +28,9 @@ namespace mirror {
                                        std::vector<cv::Point2f> &keypoints) const {
         cv::Mat img_face = img_src(face).clone();
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_face.data,
                                                      ncnn::Mat::PIXEL_BGR, img_face.cols,
                                                      img_face.rows, inputSize_.width, inputSize_.height);

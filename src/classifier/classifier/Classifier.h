@@ -46,6 +46,7 @@ namespace mirror {
         bool initialized_ = false;
         std::vector<std::string> class_names_;
         cv::Size inputSize_ = {224, 224};
+        std::string modelPath_;
     };
 
     class ClassifierFactory {

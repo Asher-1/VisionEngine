@@ -122,27 +122,17 @@ namespace mirror {
     }
 
     int RetinaFace::loadModel(const char *root_path) {
-        std::string sub_dir = "/detectors/retinaface";
-        std::string fd_param = std::string(root_path) + sub_dir + "/mnet.25-opt.param";
-        std::string fd_bin = std::string(root_path) + sub_dir + "/mnet.25-opt.bin";
-        int flag = Super::loadModel(fd_param.c_str(), fd_bin.c_str());
-        if (flag != 0) {
-            return ErrorCode::MODEL_LOAD_ERROR;
-        }
-        return 0;
+        std::string sub_dir = "/detectors";
+        std::string fd_param = std::string(root_path) + modelPath_ + "/retinaface/mnet.25-opt.param";
+        std::string fd_bin = std::string(root_path) + modelPath_ + "/retinaface/mnet.25-opt.bin";
+        return Super::loadModel(fd_param.c_str(), fd_bin.c_str());
     }
 
 #if defined __ANDROID__
     int RetinaFace::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/detectors/retinaface";
-        std::string fd_param = sub_dir + "/mnet.25-opt.param";
-        std::string fd_bin = sub_dir + "/mnet.25-opt.bin";
-        int flag = Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
-        if (flag != 0)
-        {
-            return ErrorCode::MODEL_LOAD_ERROR;
-        }
-        return 0;
+        std::string fd_param = "models" + modelPath_ + "/retinaface/mnet.25-opt.param";
+        std::string fd_bin = "models" + modelPath_ + "/retinaface/mnet.25-opt.bin";
+        return Super::loadModel(mgr, fd_param.c_str(), fd_bin.c_str());
     }
 #endif
 
@@ -175,6 +165,10 @@ namespace mirror {
                                                      h);
 
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
+
         ex.input("data", in);
 
         faces.clear();

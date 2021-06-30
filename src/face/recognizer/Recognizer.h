@@ -42,6 +42,8 @@ namespace mirror {
         bool initialized_ = false;
         int faceFaceFeatureDim_ = kFaceFeatureDim;
         cv::Size inputSize_ = {112, 112};
+        std::string modelPath_;
+
     };
 
     class RecognizerFactory {

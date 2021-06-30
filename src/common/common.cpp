@@ -130,7 +130,6 @@ namespace mirror {
         switch (type) {
             case MOBILE_NET:
                 return "MOBILE_NET";
-                break;
             default:
                 return "MOBILE_NET";
         }
@@ -140,10 +139,8 @@ namespace mirror {
         switch (type) {
             case INSIGHTFACE_LANDMARKER:
                 return "INSIGHTFACE_LANDMARKER";
-                break;
             case ZQ_LANDMARKER:
                 return "ZQ_LANDMARKER";
-                break;
             default:
                 return "NONE";
         }
@@ -153,7 +150,6 @@ namespace mirror {
         switch (type) {
             case ARC_FACE:
                 return "ARC_FACE";
-                break;
             default:
                 return "NONE";
         }
@@ -163,19 +159,14 @@ namespace mirror {
         switch (type) {
             case ANTICOV_FACE:
                 return "ANTICOV_FACE";
-                break;
             case CENTER_FACE:
                 return "CENTER_FACE";
-                break;
             case MTCNN_FACE:
                 return "MTCNN_FACE";
-                break;
             case RETINA_FACE:
                 return "RETINA_FACE";
-                break;
             case SCRFD_FACE:
                 return "SCRFD_FACE";
-                break;
             default:
                 return "NONE";
         }
@@ -185,7 +176,6 @@ namespace mirror {
         switch (type) {
             case LIVE_FACE:
                 return "LIVE_FACE";
-                break;
             default:
                 return "NONE";
         }
@@ -193,14 +183,34 @@ namespace mirror {
 
     std::string GetObjectDetectorTypeName(ObjectDetectorType type) {
         switch (type) {
+            case YOLOV4:
+                return "YOLOV4";
             case YOLOV5:
                 return "YOLOV5";
-                break;
             case MOBILENET_SSD:
                 return "MOBILENET_SSD";
-                break;
             default:
                 return "YOLOV5";
+        }
+    }
+
+    std::string GetPoseEstimationTypeName(PoseEstimationType type) {
+        switch (type) {
+            case SIMPLE_POSE:
+                return "SIMPLE_POSE";
+            case LIGHT_OPEN_POSE:
+                return "LIGHT_OPEN_POSE";
+            default:
+                return "SIMPLE_POSE";
+        }
+    }
+
+    std::string GetSegmentTypeName(SegmentType type) {
+        switch (type) {
+            case YOLACT_SEG:
+                return "YOLACT_SEG";
+            case MOBILENETV3_SEG:
+                return "MOBILENETV3_SEG";
         }
     }
 
@@ -228,4 +238,5 @@ namespace mirror {
             variance = 0;
         }
     }
+
 }

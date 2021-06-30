@@ -7,7 +7,7 @@
 
 using namespace mirror;
 
-static const bool use_gpu = true;
+static const bool use_gpu = false;
 const char *model_root_path = "../../data/models";
 
 int TestImages(int argc, char *argv[]) {
@@ -18,15 +18,16 @@ int TestImages(int argc, char *argv[]) {
     mirror::ObjectEngine *object_engine = ObjectEngine::GetInstancePtr();
 
     ObjectEigenParams params;
-    params.model_path = model_root_path;
+    params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
+    params.modeType = 2; // bugs: params.modeType = 0 and use_gpu=true;
 //	params.objectDetectorType = ObjectDetectorType::YOLOV5;
     object_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
     std::vector<mirror::ObjectInfo> objects;
-    object_engine->detectObject(img_src, objects);
+    object_engine->detect(img_src, objects);
 
     double end = static_cast<double>(cv::getTickCount());
     double time_cost = (end - start) / cv::getTickFrequency() * 1000;
@@ -62,8 +63,9 @@ int TestVideos(int argc, char *argv[]) {
 
     mirror::ObjectEngine *object_engine = ObjectEngine::GetInstancePtr();
     ObjectEigenParams params;
-    params.model_path = model_root_path;
+    params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
+    params.modeType = 2;
 //	params.objectDetectorType = ObjectDetectorType::YOLOV5;
     object_engine->loadModel(params);
 
@@ -78,7 +80,7 @@ int TestVideos(int argc, char *argv[]) {
 
         // detect objects
         std::vector<mirror::ObjectInfo> objects;
-        object_engine->detectObject(frame, objects);
+        object_engine->detect(frame, objects);
         utility::DrawObjects(frame, objects);
 
         double end = static_cast<double>(cv::getTickCount());

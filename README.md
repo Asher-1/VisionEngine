@@ -38,6 +38,10 @@ https://github.com/nihui/opencv-mobile
 ### ![图片](./data/images/object_result.jpg)
 ### classifier result:
 ### ![图片](./data/images/classify_result.jpg)
+### pose result:
+### ![图片](./data/images/pose_result.jpg)
+### segment result:
+### ![图片](./data/images/segment_result.jpg)
 
 # 7. Deploy:
 - [x] Linux deploy

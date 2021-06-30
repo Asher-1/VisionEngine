@@ -21,6 +21,16 @@ namespace utility {
                     const cv::Scalar &fontColor = cv::Scalar(0, 0, 0),
                     const cv::Scalar &bkColor = cv::Scalar(255, 255, 255));
 
+    int DrawPoses(cv::Mat &img_src, const std::vector<mirror::PoseResult> &poses,
+                  const std::vector<std::pair<int, int>> &jointPairs,
+                  int radius = 2, int thickness = 1,
+                  const cv::Scalar &pointColor = cv::Scalar(0, 255, 0));
+
+    int DrawMask(cv::Mat &img_src, const std::vector<mirror::SegmentInfo> &segments,
+                 int maskType = 0, double fontScale = 0.5, int thickness = 1,
+                 const cv::Scalar &fontColor = cv::Scalar(0, 0, 0),
+                 const cv::Scalar &bkColor = cv::Scalar(255, 255, 255));
+
     int DrawText(cv::Mat &img_src, const cv::Point2i &position, const char *text,
                  double fontScale = 0.5, int thickness = 1,
                  const cv::Scalar &fontColor = cv::Scalar(0, 0, 0),
@@ -41,5 +51,5 @@ namespace utility {
      *
      * */
     int GetTextCornerPosition(const cv::Mat &img_src, const char *text, int orientation,
-                              double fontScale, int thickness, cv::Point2i& position);
+                              double fontScale, int thickness, cv::Point2i &position);
 }

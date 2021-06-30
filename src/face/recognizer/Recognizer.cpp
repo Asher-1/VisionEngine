@@ -15,7 +15,8 @@ namespace mirror {
             gpu_mode_(false),
             initialized_(false),
             faceFaceFeatureDim_(kFaceFeatureDim),
-            inputSize_(cv::Size(112, 112)) {
+            inputSize_(cv::Size(112, 112)),
+            modelPath_("/face/recognizer") {
     }
 
     Recognizer::~Recognizer() {

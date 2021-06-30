@@ -18,6 +18,7 @@ namespace mirror {
         virtual ~ObjectDetector();
 
         int load(const ObjectEigenParams &params);
+
         int update(const ObjectEigenParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const;
@@ -40,6 +41,7 @@ namespace mirror {
     protected:
         ObjectDetectorType type_;
         ncnn::Net *net_ = nullptr;
+        int modeType_ = 0;
         bool verbose_ = false;
         bool gpu_mode_ = false;
         bool initialized_ = false;
@@ -47,6 +49,7 @@ namespace mirror {
         float nmsThreshold_ = 0.5f;
         std::vector<std::string> class_names_;
         cv::Size inputSize_ = {640, 640};
+        std::string modelPath_;
     };
 
     class ObjectDetectorFactory {
@@ -64,6 +67,16 @@ namespace mirror {
 
         ~MobilenetSSDFactory() override = default;
     };
+
+    class Yolov4Factory : public ObjectDetectorFactory {
+    public:
+        Yolov4Factory() = default;
+
+        ObjectDetector *createDetector() const override;
+
+        ~Yolov4Factory() override = default;
+    };
+
 
     class Yolov5Factory : public ObjectDetectorFactory {
     public:

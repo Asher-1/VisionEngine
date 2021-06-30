@@ -19,7 +19,7 @@ namespace mirror {
         int detectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const override;
 
     private:
-        const float norm_vals[3] = {1 / 255.f, 1 / 255.f, 1 / 255.f};
+        const float normVals[3] = {1 / 255.f, 1 / 255.f, 1 / 255.f};
     };
 
 }

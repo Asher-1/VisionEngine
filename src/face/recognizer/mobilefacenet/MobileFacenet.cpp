@@ -11,17 +11,16 @@ namespace mirror {
     }
 
     int MobileFacenet::loadModel(const char *root_path) {
-        std::string sub_dir = "/recognizers/mobilefacenet";
-        std::string fr_param = std::string(root_path) + sub_dir + "/fr.param";
-        std::string fr_bin = std::string(root_path) + sub_dir + "/fr.bin";
+        std::string fr_param = std::string(root_path) + modelPath_ + "/mobilefacenet/fr.param";
+        std::string fr_bin = std::string(root_path) + modelPath_ + "/mobilefacenet/fr.bin";
         return Super::loadModel(fr_param.c_str(), fr_bin.c_str());
     }
 
 #if defined __ANDROID__
     int MobileFacenet::loadModel(AAssetManager *mgr) {
-        std::string sub_dir = "models/recognizers/mobilefacenet";
-        std::string fr_param = sub_dir + "/fr.param";
-        std::string fr_bin = sub_dir + "/fr.bin";
+        std::string sub_dir = "models";
+        std::string fr_param = sub_dir + modelPath_ + "/mobilefacenet/fr.param";
+        std::string fr_bin = sub_dir + modelPath_ + "/mobilefacenet/fr.bin";
         return Super::loadModel(mgr, fr_param.c_str(), fr_bin.c_str());
     }
 #endif
@@ -33,6 +32,9 @@ namespace mirror {
                                                      face_cpy.rows, inputSize_.width, inputSize_.height);
         feature.resize(faceFaceFeatureDim_);
         ncnn::Extractor ex = this->net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ex.input("data", in);
         ncnn::Mat out;
         ex.extract("fc1", out);

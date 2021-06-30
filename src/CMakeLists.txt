@@ -12,11 +12,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fPIC -std=c++11 -fopenmp")
 add_library(VisionEngine STATIC ${SRC_FILES})
 
 if (MIRROR_BUILD_ANDROID)
-    set(NCNN_PATH /media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/jni/ncnn-20210525-android-vulkan)
-    set(OPENCV_PATH /media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/jni/opencv-mobile-4.5.1-android)
+    set(NCNN_PATH "" CACHE PATH "Ncnn root directory" )
+    set(OPENCV_PATH "" CACHE PATH "Opencv root directory")
 else ()
-    set(NCNN_PATH ${CMAKE_SOURCE_DIR}/lib/ncnn-20210525-ubuntu-1804)
-    set(OPENCV_PATH ${CMAKE_SOURCE_DIR}/lib/opencv-mobile-4.5.1-android)
+    set(NCNN_PATH "${CMAKE_SOURCE_DIR}/lib/ncnn-20210525-ubuntu-1804" CACHE PATH "Ncnn root directory" )
+    set(OPENCV_PATH "${CMAKE_SOURCE_DIR}/lib/opencv-mobile-4.5.1-ubuntu-1804" CACHE PATH "Opencv root directory")
 endif ()
 
 if (MSVC)
@@ -92,8 +92,19 @@ target_include_directories(VisionEngine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/common>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/object>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/yolov4>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/yolov5>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/mobilenetssd>
+
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pose>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pose/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pose/detectors/simplepose>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pose/detectors/lightopenpose>
+
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/segment>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/segment/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/segment/detectors/yolact>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/segment/detectors/mobilenetv3>
 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifier>
@@ -107,6 +118,8 @@ if (MIRROR_INSTALL_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/utility/VisionTools.h
             ${CMAKE_CURRENT_SOURCE_DIR}/face/FaceEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/object/ObjectEngine.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/pose/PoseEngine.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/segment/SegmentEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/classifier/ClassifierEngine.h
             DESTINATION ${PROJECT_BINARY_DIR}/include
             )
@@ -136,17 +149,24 @@ if (MIRROR_INSTALL_SDK)
 
 endif ()
 
-if (MIRROR_BUILD_FACE)
+if (MIRROR_BUILD_EXAMPLES)
+    # face
     add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.cpp)
     target_link_libraries(face PUBLIC VisionEngine)
-endif ()
 
-if (MIRROR_BUILD_CLASSIFIER)
+    # classification
     add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.cpp)
     target_link_libraries(classifier PUBLIC VisionEngine)
-endif ()
 
-if (MIRROR_BUILD_OBJECT)
+    # object
     add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.cpp)
     target_link_libraries(object PUBLIC VisionEngine)
+
+    # pose
+    add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.cpp)
+    target_link_libraries(pose PUBLIC VisionEngine)
+
+    # segment
+    add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.cpp)
+    target_link_libraries(segment PUBLIC VisionEngine)
 endif ()

@@ -17,7 +17,7 @@ int TestImages(int argc, char *argv[]) {
     mirror::ClassifierEngine *classifier_engine = mirror::ClassifierEngine::GetInstancePtr();
 
     mirror::ClassifierEigenParams params;
-    params.model_path = root_path;
+    params.modelPath = root_path;
     params.gpuEnabled = use_gpu;
     params.topK = 3;
     classifier_engine->loadModel(params);
@@ -59,7 +59,7 @@ int TestVideos(int argc, char *argv[]) {
 
     mirror::ClassifierEngine *classifier_engine = mirror::ClassifierEngine::GetInstancePtr();
     mirror::ClassifierEigenParams params;
-    params.model_path = root_path;
+    params.modelPath = root_path;
     params.gpuEnabled = use_gpu;
     params.topK = 3;
     classifier_engine->loadModel(params);

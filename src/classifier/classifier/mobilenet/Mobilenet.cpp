@@ -12,7 +12,7 @@ namespace mirror {
     }
 
     int Mobilenet::loadModel(const char *root_path) {
-        std::string root_dir = std::string(root_path) + "/classifiers/mobilenet";
+        std::string root_dir = std::string(root_path) + modelPath_ + "/mobilenet";
         std::string param_file = root_dir + "/mobilenet.param";
         std::string model_file = root_dir + "/mobilenet.bin";
         std::string label_file = root_dir + "/label.txt";
@@ -26,7 +26,7 @@ namespace mirror {
 
 #if defined __ANDROID__
     int Mobilenet::loadModel(AAssetManager *mgr) {
-        std::string root_dir = "models/classifiers/mobilenet";
+        std::string root_dir = "models" + modelPath_ + "/mobilenet";
         std::string param_file = root_dir + "/mobilenet.param";
         std::string model_file = root_dir + "/mobilenet.bin";
         std::string label_file = root_dir + "/label.txt";
@@ -46,6 +46,9 @@ namespace mirror {
         in.substract_mean_normalize(meanVals, normVals);
 
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        ex.set_vulkan_compute(this->gpu_mode_);
+#endif
         ex.input("data", in);
         ncnn::Mat out;
         ex.extract("prob", out);

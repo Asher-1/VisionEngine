@@ -43,6 +43,7 @@ namespace mirror {
         bool gpu_mode_ = false;
         bool initialized_ = false;
         cv::Size inputSize_ = {112, 112};
+        std::string modelPath_;
     };
 
     class LandmarkerFactory {

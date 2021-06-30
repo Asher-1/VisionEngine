@@ -15,7 +15,8 @@ namespace mirror {
             gpu_mode_(false),
             initialized_(false),
             faceLivingThreshold_(0.93),
-            inputSize_(cv::Size(80, 80)) {
+            inputSize_(cv::Size(80, 80)),
+            modelPath_("/face/living") {
         clearNets();
         configs_.clear();
     }
