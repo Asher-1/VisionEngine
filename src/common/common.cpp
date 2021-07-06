@@ -128,10 +128,10 @@ namespace mirror {
 
     std::string GetClassifierTypeName(ClassifierType type) {
         switch (type) {
-            case SQUEEZE_NET:
-                return "SQUEEZE_NET";
             case MOBILE_NET:
                 return "MOBILE_NET";
+            case SQUEEZE_NET:
+                return "SQUEEZE_NET";
             default:
                 return "SQUEEZE_NET";
         }

@@ -51,11 +51,11 @@ namespace mirror {
 
             if (!classifier_) {
                 switch (params.classifierType) {
-                    case SQUEEZE_NET:
-                        classifier_ = SqueezeNetFactory().createClassifier();
-                        break;
                     case MOBILE_NET:
                         classifier_ = MobilenetFactory().createClassifier();
+                        break;
+                    case SQUEEZE_NET:
+                        classifier_ = SqueezeNetFactory().createClassifier();
                         break;
                 }
 
