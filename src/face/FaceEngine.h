@@ -28,7 +28,7 @@ namespace mirror {
 
         FACE_API void destroyEngine();
 
-        FACE_API int loadModel(const FaceEigenParams &params);
+        FACE_API int loadModel(const FaceEngineParams &params);
 
         FACE_API bool detectLivingFace(const cv::Mat &img_src, const cv::Rect &box, float &livingScore) const;
 

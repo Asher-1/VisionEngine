@@ -24,7 +24,8 @@ public:
 	OBJECT_API static void ReleaseInstance();
 	OBJECT_API void destroyEngine();
 
-	OBJECT_API int loadModel(const ObjectEigenParams &params);
+	OBJECT_API int loadModel(const ObjectEngineParams &params);
+	OBJECT_API int updateModel(const ObjectEngineParams &params);
 	OBJECT_API int detect(const cv::Mat& img_src, std::vector<ObjectInfo>& objects) const;
 
 private:

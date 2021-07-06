@@ -26,33 +26,73 @@ namespace mirror {
             }
         }
 
-        int LoadModel(const ClassifierEigenParams &params) {
+        inline void PrintConfigurations(const ClassifierEngineParams &params) const {
+            std::cout << "--------------Classifier Configuration--------------" << std::endl;
+            std::string configureInfo;
+            configureInfo += std::string("GPU: ") + (params.gpuEnabled ? "True" : "False");
+            configureInfo += std::string("\nVerbose: ") + (params.verbose ? "True" : "False");
+            configureInfo += "\nModel path: " + params.modelPath;
+
+            configureInfo += std::string("\ntopK: ") + std::to_string(params.topK);
+            configureInfo += std::string("\nthread number: ") + std::to_string(params.threadNum);
+
+            if (classifier_) {
+                configureInfo += "\nclassifier type: " + GetClassifierTypeName(classifier_->getType());
+            }
+
+            std::cout << configureInfo << std::endl;
+            std::cout << "---------------------------------------------------" << std::endl;
+        }
+
+        int LoadModel(const ClassifierEngineParams &params) {
             if (classifier_ && classifier_->getType() != params.classifierType) {
                 destroyClassifier();
             }
 
             if (!classifier_) {
                 switch (params.classifierType) {
+                    case SQUEEZE_NET:
+                        classifier_ = SqueezeNetFactory().createClassifier();
+                        break;
                     case MOBILE_NET:
                         classifier_ = MobilenetFactory().createClassifier();
                         break;
                 }
 
-                if (!classifier_ || classifier_->load(params) != 0) {
+                if (!classifier_ || classifier_->load(params) != ErrorCode::SUCCESS) {
                     std::cout << "load object classifier failed." << std::endl;
                     initialized_ = false;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
             }
 
-            if (classifier_->update(params) != 0) {
+            if (classifier_->update(params) != ErrorCode::SUCCESS) {
                 std::cout << "update object classifier model failed." << std::endl;
                 initialized_ = false;
                 return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
+            PrintConfigurations(params);
+
             initialized_ = true;
-            return 0;
+            return ErrorCode::SUCCESS;
+        }
+
+        inline int UpdateModel(const ClassifierEngineParams &params) {
+            if (!classifier_ || classifier_->getType() != params.classifierType) {
+                return LoadModel(params);
+            }
+
+            if (classifier_->update(params) != ErrorCode::SUCCESS) {
+                std::cout << "update object classifier model failed." << std::endl;
+                initialized_ = false;
+                return ErrorCode::MODEL_UPDATE_ERROR;
+            }
+
+            PrintConfigurations(params);
+
+            initialized_ = true;
+            return ErrorCode::SUCCESS;
         }
 
         int Classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const {
@@ -105,8 +145,12 @@ namespace mirror {
         }
     }
 
-    int ClassifierEngine::loadModel(const ClassifierEigenParams &params) {
+    int ClassifierEngine::loadModel(const ClassifierEngineParams &params) {
         return impl_->LoadModel(params);
+    }
+
+    int ClassifierEngine::updateModel(const ClassifierEngineParams &params) {
+        return impl_->UpdateModel(params);
     }
 
     int ClassifierEngine::classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const {

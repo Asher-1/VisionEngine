@@ -17,7 +17,7 @@ int TestImages(int argc, char *argv[]) {
 
     mirror::ObjectEngine *object_engine = ObjectEngine::GetInstancePtr();
 
-    ObjectEigenParams params;
+    ObjectEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
     params.modeType = 2; // bugs: params.modeType = 0 and use_gpu=true;
@@ -62,7 +62,7 @@ int TestVideos(int argc, char *argv[]) {
     }
 
     mirror::ObjectEngine *object_engine = ObjectEngine::GetInstancePtr();
-    ObjectEigenParams params;
+    ObjectEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
     params.modeType = 2;

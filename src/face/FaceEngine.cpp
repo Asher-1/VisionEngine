@@ -72,7 +72,7 @@ namespace mirror {
             }
         }
 
-        int initFaceDetector(const FaceEigenParams &params) {
+        int initFaceDetector(const FaceEngineParams &params) {
             if (detector_ && detector_->getType() != params.faceDetectorType) {
                 destroyFaceDetector();
             }
@@ -112,7 +112,7 @@ namespace mirror {
             return 0;
         }
 
-        int initFaceRecognizer(const FaceEigenParams &params) {
+        int initFaceRecognizer(const FaceEngineParams &params) {
             if (recognizer_ && recognizer_->getType() != params.faceRecognizerType) {
                 destroyFaceRecognizer();
             }
@@ -140,7 +140,7 @@ namespace mirror {
             return 0;
         }
 
-        int initFaceAntiSpoofing(const FaceEigenParams &params) {
+        int initFaceAntiSpoofing(const FaceEngineParams &params) {
             if (faceAntiSpoofing_ && faceAntiSpoofing_->getType() != params.faceAntiSpoofingType) {
                 destroyFaceAntiSpoofing();
             }
@@ -170,7 +170,7 @@ namespace mirror {
 
         }
 
-        int initFaceLandMarker(const FaceEigenParams &params) {
+        int initFaceLandMarker(const FaceEngineParams &params) {
             if (landmarker_ && landmarker_->getType() != params.faceLandMarkerType) {
                 destroyFaceLandMarker();
             }
@@ -202,7 +202,7 @@ namespace mirror {
 
         }
 
-        int LoadModel(const FaceEigenParams &params) {
+        int LoadModel(const FaceEngineParams &params) {
             if (params.faceFeaturePath.empty()) {
                 db_name_ = std::string(params.modelPath);
             } else {
@@ -257,43 +257,44 @@ namespace mirror {
             return 0;
         }
 
-        inline void PrintConfigurations(const FaceEigenParams &params) const {
-            std::cout << "--------------Configuration--------------" << std::endl;
+        inline void PrintConfigurations(const FaceEngineParams &params) const {
+            std::cout << "--------------Face Configuration--------------" << std::endl;
             std::string configureInfo;
             configureInfo += std::string("GPU: ") + (params.gpuEnabled ? "True" : "False");
             configureInfo += std::string("\nVerbose: ") + (params.verbose ? "True" : "False");
             configureInfo += "\nModel path: " + params.modelPath;
             configureInfo += "\nFace feature database path: " + params.faceFeaturePath;
 
-            configureInfo += std::string("\nFace detector Enabled: ") +
+            configureInfo += std::string("\ndetector Enabled: ") +
                              (params.faceDetectorEnabled ? "True" : "False");
-            configureInfo += std::string("\nFace recognizer Enabled: ") +
+            configureInfo += std::string("\nrecognizer Enabled: ") +
                              (params.faceRecognizerEnabled ? "True" : "False");
-            configureInfo += std::string("\nFace anti detector Enabled: ") +
+            configureInfo += std::string("\nanti detector Enabled: ") +
                              (params.faceAntiSpoofingEnabled ? "True" : "False");
-            configureInfo += std::string("\nFace landmarker Enabled: ") +
+            configureInfo += std::string("\nlandmarker Enabled: ") +
                              (params.faceLandMarkerEnabled ? "True" : "False");
+            configureInfo += std::string("\nthread number: ") + std::to_string(params.threadNum);
 
             if (detector_) {
-                configureInfo += "\nFace detector type: " + GetDetectorTypeName(detector_->getType());
+                configureInfo += "\ndetector type: " + GetDetectorTypeName(detector_->getType());
             }
 
             if (recognizer_) {
-                configureInfo += "\nFace recognizer type: " + GetRecognizerTypeName(recognizer_->getType());
+                configureInfo += "\nrecognizer type: " + GetRecognizerTypeName(recognizer_->getType());
             }
 
             if (faceAntiSpoofing_) {
-                configureInfo += "\nFace anti detector type: " +
+                configureInfo += "\nliving detector type: " +
                                  GetAntiSpoofingTypeName(faceAntiSpoofing_->getType());
             }
 
             if (landmarker_) {
-                configureInfo += "\nFace landmarker type: " +
+                configureInfo += "\nlandmarker type: " +
                                  GetLandMarkerTypeName(landmarker_->getType());
             }
 
             std::cout << configureInfo << std::endl;
-            std::cout << "-----------------------------------------" << std::endl;
+            std::cout << "-----------------------------------------------" << std::endl;
         }
 
         inline int Track(const std::vector<FaceInfo> &curr_faces, std::vector<TrackedFaceInfo> &faces) {
@@ -452,7 +453,7 @@ namespace mirror {
         }
     }
 
-    int FaceEngine::loadModel(const FaceEigenParams &params) {
+    int FaceEngine::loadModel(const FaceEngineParams &params) {
         return impl_->LoadModel(params);
     }
 

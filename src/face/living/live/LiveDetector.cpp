@@ -69,7 +69,9 @@ namespace mirror {
             ncnn::Extractor extractor = nets_[i]->create_extractor();
             extractor.set_light_mode(true);
 #if NCNN_VULKAN
-            extractor.set_vulkan_compute(this->gpu_mode_);
+            if (this->gpu_mode_) {
+                extractor.set_vulkan_compute(this->gpu_mode_);
+            }
 #endif
 
             extractor.input(net_input_name_.c_str(), in);

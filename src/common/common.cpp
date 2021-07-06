@@ -128,10 +128,12 @@ namespace mirror {
 
     std::string GetClassifierTypeName(ClassifierType type) {
         switch (type) {
+            case SQUEEZE_NET:
+                return "SQUEEZE_NET";
             case MOBILE_NET:
                 return "MOBILE_NET";
             default:
-                return "MOBILE_NET";
+                return "SQUEEZE_NET";
         }
     }
 
@@ -237,6 +239,21 @@ namespace mirror {
             mean = 0;
             variance = 0;
         }
+    }
+
+    void SplitString(const std::string &str, const std::string &delimiter,
+                     int offset, std::vector<std::string> &result) {
+        result.clear();
+        std::string::size_type pos = 0;
+        std::string::size_type prev = 0;
+        while ((pos = str.find(delimiter, prev)) != std::string::npos) {
+            prev += offset;
+            result.push_back(str.substr(prev, pos - prev));
+            prev = pos + 1;
+        }
+
+        // To get the last substring (or only, if delimiter is not found)
+        result.push_back(str.substr(prev + 10));
     }
 
 }

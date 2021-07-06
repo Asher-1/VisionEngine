@@ -24,7 +24,8 @@ public:
 	POSE_API static void ReleaseInstance();
 	POSE_API void destroyEngine();
 
-	POSE_API int loadModel(const PoseEigenParams &params);
+	POSE_API int loadModel(const PoseEngineParams &params);
+	POSE_API int updateModel(const PoseEngineParams &params);
 	POSE_API int detect(const cv::Mat& img_src, std::vector<PoseResult>& poses) const;
 	POSE_API const std::vector<std::pair<int, int>>& getJointPairs() const;
 

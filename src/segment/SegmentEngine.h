@@ -24,7 +24,8 @@ public:
 	SEGMENT_API static void ReleaseInstance();
 	SEGMENT_API void destroyEngine();
 
-	SEGMENT_API int loadModel(const SegmentEigenParams &params);
+	SEGMENT_API int loadModel(const SegmentEngineParams &params);
+	SEGMENT_API int updateModel(const SegmentEngineParams &params);
 	SEGMENT_API int detect(const cv::Mat& img_src, std::vector<SegmentInfo>& segments) const;
 
 private:

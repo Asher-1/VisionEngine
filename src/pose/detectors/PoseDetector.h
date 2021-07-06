@@ -17,9 +17,9 @@ namespace mirror {
 
         virtual ~PoseDetector();
 
-        int load(const PoseEigenParams &params);
+        int load(const PoseEngineParams &params);
 
-        int update(const PoseEigenParams &params);
+        int update(const PoseEngineParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<PoseResult> &poses) const;
 

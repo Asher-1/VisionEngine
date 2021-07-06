@@ -23,7 +23,26 @@ namespace mirror {
             }
         }
 
-        inline int LoadModel(const SegmentEigenParams &params) {
+        inline void PrintConfigurations(const SegmentEngineParams &params) const {
+            std::cout << "--------------Segment Configuration--------------" << std::endl;
+            std::string configureInfo;
+            configureInfo += std::string("GPU: ") + (params.gpuEnabled ? "True" : "False");
+            configureInfo += std::string("\nVerbose: ") + (params.verbose ? "True" : "False");
+            configureInfo += "\nModel path: " + params.modelPath;
+
+            configureInfo += std::string("\nnmsThreshold: ") + std::to_string(params.nmsThreshold);
+            configureInfo += std::string("\nscoreThreshold: ") + std::to_string(params.scoreThreshold);
+            configureInfo += std::string("\nthread number: ") + std::to_string(params.threadNum);
+
+            if (segment_detector_) {
+                configureInfo += "\nSegment detector type: " + GetSegmentTypeName(segment_detector_->getType());
+            }
+
+            std::cout << configureInfo << std::endl;
+            std::cout << "-------------------------------------------------" << std::endl;
+        }
+
+        inline int LoadModel(const SegmentEngineParams &params) {
             if (segment_detector_ && segment_detector_->getType() != params.segmentType) {
                 destroySegmentDetector();
             }
@@ -50,11 +69,30 @@ namespace mirror {
                 return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
+            PrintConfigurations(params);
+
             initialized_ = true;
             return 0;
         }
 
-        inline int Detect(const cv::Mat &img_src, std::vector<SegmentInfo>& segments) const {
+        inline int UpdateModel(const SegmentEngineParams &params) {
+            if (!segment_detector_ || segment_detector_->getType() != params.segmentType) {
+                return LoadModel(params);
+            }
+
+            if (segment_detector_->update(params) != ErrorCode::SUCCESS) {
+                std::cout << "update segment detector model failed." << std::endl;
+                initialized_ = false;
+                return ErrorCode::MODEL_UPDATE_ERROR;
+            }
+
+            PrintConfigurations(params);
+
+            initialized_ = true;
+            return ErrorCode::SUCCESS;
+        }
+
+        inline int Detect(const cv::Mat &img_src, std::vector<SegmentInfo> &segments) const {
             if (!initialized_ || !segment_detector_) {
                 std::cout << "segment detector model uninitialized!" << std::endl;
                 return ErrorCode::UNINITIALIZED_ERROR;
@@ -104,11 +142,15 @@ namespace mirror {
         }
     }
 
-    int SegmentEngine::loadModel(const SegmentEigenParams &params) {
+    int SegmentEngine::loadModel(const SegmentEngineParams &params) {
         return impl_->LoadModel(params);
     }
 
-    int SegmentEngine::detect(const cv::Mat &img_src, std::vector<SegmentInfo>& segments) const {
+    int SegmentEngine::updateModel(const SegmentEngineParams &params) {
+        return impl_->UpdateModel(params);
+    }
+
+    int SegmentEngine::detect(const cv::Mat &img_src, std::vector<SegmentInfo> &segments) const {
         return impl_->Detect(img_src, segments);
     }
 

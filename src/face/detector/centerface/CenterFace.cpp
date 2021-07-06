@@ -39,7 +39,9 @@ namespace mirror {
                                                      img_width, img_height, img_width_new, img_height_new);
         ncnn::Extractor ex = net_->create_extractor();
 #if NCNN_VULKAN
-        ex.set_vulkan_compute(this->gpu_mode_);
+        if (this->gpu_mode_) {
+            ex.set_vulkan_compute(this->gpu_mode_);
+        }
 #endif
         ex.input("input.1", in);
         ncnn::Mat mat_heatmap, mat_scale, mat_offset, mat_landmark;

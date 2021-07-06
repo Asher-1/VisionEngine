@@ -42,6 +42,7 @@ namespace mirror {
     // for classifier module
     enum ClassifierType {
         MOBILE_NET = 0,
+        SQUEEZE_NET = 1,
     };
 
     std::string GetClassifierTypeName(ClassifierType type);
@@ -51,11 +52,11 @@ namespace mirror {
         float score_;
     };
 
-    struct ClassifierEigenParams {
-        int topK = 5;
+    struct ClassifierEngineParams {
+        int topK = 3;
         bool verbose = false;
-        bool thread_num = -1;
         bool gpuEnabled = false;
+        int threadNum = 4;
         std::string modelPath;
         ClassifierType classifierType = ClassifierType::MOBILE_NET;
 #if defined __ANDROID__
@@ -78,14 +79,15 @@ namespace mirror {
         std::string name_;
     };
 
-    struct ObjectEigenParams {
+    struct ObjectEngineParams {
         std::string modelPath;
         bool gpuEnabled = false;
-        bool thread_num = -1;
         bool verbose = false;
+        int threadNum = 4;
         float nmsThreshold = -1.0f;
         float scoreThreshold = -1.0f;
-        int modeType = 2;
+        // only available when objectDetectorType = ObjectDetectorType::YOLOV4
+        int modeType = 2; // 0 for yolov4-tiny-opt; 1 for MobileNetV2-YOLOv3-Nano-coco; 2 for yolo-fastest-opt
         ObjectDetectorType objectDetectorType = ObjectDetectorType::YOLOV4;
 #if defined __ANDROID__
         AAssetManager* mgr = nullptr;
@@ -106,15 +108,13 @@ namespace mirror {
     };
     struct PoseResult {
         std::vector<KeyPoint> keyPoints;
-        ObjectInfo boxInfos;
+        ObjectInfo boxInfo;
     };
-    struct PoseEigenParams {
+    struct PoseEngineParams {
         std::string modelPath;
         bool gpuEnabled = false;
-        bool thread_num = -1;
         bool verbose = false;
-        float nmsThreshold = -1.0f;
-        float scoreThreshold = -1.0f;
+        int threadNum = 4;
         PoseEstimationType poseEstimationType = PoseEstimationType::SIMPLE_POSE;
 #if defined __ANDROID__
         AAssetManager* mgr = nullptr;
@@ -136,11 +136,11 @@ namespace mirror {
         cv::Mat mask;
     };
 
-    struct SegmentEigenParams {
+    struct SegmentEngineParams {
         std::string modelPath;
         bool gpuEnabled = false;
-        bool thread_num = -1;
         bool verbose = false;
+        int threadNum = 4;
         float nmsThreshold = -1.0f;
         float scoreThreshold = -1.0f;
         SegmentType segmentType = SegmentType::YOLACT_SEG;
@@ -148,7 +148,6 @@ namespace mirror {
         AAssetManager* mgr = nullptr;
 #endif
     };
-
 
     // for face module
     enum FaceAntiSpoofingType {
@@ -189,12 +188,12 @@ namespace mirror {
         float sim_;
     };
 
-    struct FaceEigenParams {
+    struct FaceEngineParams {
         std::string modelPath;
         std::string faceFeaturePath;
         bool gpuEnabled = false;
         bool verbose = false;
-        bool threadNum = -1;
+        int threadNum = 4;
         float nmsThreshold = -1.0f;
         float scoreThreshold = -1.0f;
         float livingThreshold = -1.0f;
@@ -298,4 +297,6 @@ namespace mirror {
 
     void ConvertKeyPoints(const cv::Point2f ori[], int size, std::vector<cv::Point2f> &dst);
 
+    void SplitString(const std::string &str, const std::string &delimiter,
+                     int offset, std::vector<std::string> &result);
 }

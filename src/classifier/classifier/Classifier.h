@@ -16,8 +16,9 @@ namespace mirror {
 
         virtual ~Classifier();
 
-        int load(const ClassifierEigenParams &params);
-        int update(const ClassifierEigenParams &params);
+        int load(const ClassifierEngineParams &params);
+
+        int update(const ClassifierEngineParams &params);
 
         int classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const;
 
@@ -30,6 +31,7 @@ namespace mirror {
 
 #if defined __ANDROID__
         virtual int loadModel(AAssetManager* mgr) { return -1; };
+        int loadLabels(AAssetManager *mgr, const char *label_path);
         int loadModel(AAssetManager* mgr, const char* params, const char* models);
 #endif
 
@@ -66,4 +68,13 @@ namespace mirror {
 
     };
 
+    class SqueezeNetFactory : public ClassifierFactory {
+    public:
+        SqueezeNetFactory() = default;
+
+        ~SqueezeNetFactory() override = default;
+
+        Classifier *createClassifier() const override;
+
+    };
 }

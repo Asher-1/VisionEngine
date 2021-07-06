@@ -45,6 +45,12 @@ namespace mirror {
         in.substract_mean_normalize(meanVals, normVals);
 
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        if (this->gpu_mode_) {
+            ex.set_vulkan_compute(this->gpu_mode_);
+        }
+#endif
+
         ex.input("data", in);
         ncnn::Mat out;
         ex.extract("detection_out", out);

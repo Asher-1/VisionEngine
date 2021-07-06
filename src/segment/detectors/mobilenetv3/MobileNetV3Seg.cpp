@@ -46,9 +46,11 @@ namespace mirror {
         ncnn::Mat maskout;
 
         auto ex = net_->create_extractor();
+#if NCNN_VULKAN
         if (this->gpu_mode_) {
             ex.set_vulkan_compute(this->gpu_mode_);
         }
+#endif
 
         ex.input("input", in);
         ex.extract("output", maskout);

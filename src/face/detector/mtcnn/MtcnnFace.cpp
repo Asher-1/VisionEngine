@@ -152,7 +152,9 @@ namespace mirror {
             //ex.set_num_threads(2);
             ex.set_light_mode(true);
 #if NCNN_VULKAN
-            ex.set_vulkan_compute(this->gpu_mode_);
+            if (this->gpu_mode_) {
+                ex.set_vulkan_compute(this->gpu_mode_);
+            }
 #endif
             ex.input("data", img_resized);
             ncnn::Mat score_mat, location_mat;
@@ -211,7 +213,9 @@ namespace mirror {
             ex.set_light_mode(true);
             ex.set_num_threads(2);
 #if NCNN_VULKAN
-            ex.set_vulkan_compute(this->gpu_mode_);
+            if (this->gpu_mode_) {
+                ex.set_vulkan_compute(this->gpu_mode_);
+            }
 #endif
             ex.input("data", img_resized);
             ncnn::Mat score_mat, location_mat;
@@ -253,7 +257,9 @@ namespace mirror {
             ex.set_light_mode(true);
             ex.set_num_threads(2);
 #if NCNN_VULKAN
-            ex.set_vulkan_compute(this->gpu_mode_);
+            if (this->gpu_mode_) {
+                ex.set_vulkan_compute(this->gpu_mode_);
+            }
 #endif
             ex.input("data", img_resized);
             ncnn::Mat score_mat, location_mat, keypoints_mat;

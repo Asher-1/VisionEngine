@@ -142,9 +142,11 @@ namespace mirror {
         ncnn::Mat mask;
         ncnn::Mat confidence;
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
         if (this->gpu_mode_) {
             ex.set_vulkan_compute(this->gpu_mode_);
         }
+#endif
 
         ex.input("input.1", in);
         ex.extract("619", maskmaps);   // 138x138 x 32
@@ -313,8 +315,7 @@ namespace mirror {
 
                 for (int y = 0; y < img_height; y++) {
                     if (y < obj.boxInfo.location_.y ||
-                        y > obj.boxInfo.location_.y + obj.boxInfo.location_.height)
-                    {
+                        y > obj.boxInfo.location_.y + obj.boxInfo.location_.height) {
                         continue;
                     }
 

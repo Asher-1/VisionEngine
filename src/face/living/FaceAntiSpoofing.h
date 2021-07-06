@@ -26,8 +26,8 @@ namespace mirror {
 
         virtual ~FaceAntiSpoofing();
 
-        int load(const FaceEigenParams &params);
-        int update(const FaceEigenParams &params);
+        int load(const FaceEngineParams &params);
+        int update(const FaceEngineParams &params);
 
         bool detect(const cv::Mat &src, const cv::Rect &box, float &livingScore) const;
 

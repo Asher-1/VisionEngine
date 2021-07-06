@@ -33,7 +33,9 @@ namespace mirror {
         feature.resize(faceFaceFeatureDim_);
         ncnn::Extractor ex = this->net_->create_extractor();
 #if NCNN_VULKAN
-        ex.set_vulkan_compute(this->gpu_mode_);
+        if (this->gpu_mode_) {
+            ex.set_vulkan_compute(this->gpu_mode_);
+        }
 #endif
         ex.input("data", in);
         ncnn::Mat out;

@@ -20,8 +20,8 @@ namespace mirror {
         virtual ~Detector();
 
     public:
-        int load(const FaceEigenParams &params);
-        int update(const FaceEigenParams &params);
+        int load(const FaceEngineParams &params);
+        int update(const FaceEngineParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<FaceInfo> &faces) const;
 

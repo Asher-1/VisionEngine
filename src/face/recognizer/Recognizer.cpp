@@ -16,7 +16,7 @@ namespace mirror {
             initialized_(false),
             faceFaceFeatureDim_(kFaceFeatureDim),
             inputSize_(cv::Size(112, 112)),
-            modelPath_("/face/recognizer") {
+            modelPath_("/face/recognizers") {
     }
 
     Recognizer::~Recognizer() {
@@ -49,7 +49,7 @@ namespace mirror {
 #endif
 
 
-    int Recognizer::load(const FaceEigenParams &params) {
+    int Recognizer::load(const FaceEngineParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
 
@@ -75,10 +75,8 @@ namespace mirror {
         opt.num_threads = num_threads;
 
 #if NCNN_VULKAN
-        this->gpu_mode_ = params.gpuEnabled;
-        if (ncnn::get_gpu_count() != 0) {
-            opt.use_vulkan_compute = this->gpu_mode_;
-        }
+        this->gpu_mode_ = params.gpuEnabled && ncnn::get_gpu_count() > 0;
+        opt.use_vulkan_compute = this->gpu_mode_;
 #endif // NCNN_VULKAN
 
         this->net_->opt = opt;
@@ -101,7 +99,7 @@ namespace mirror {
         return flag;
     }
 
-    int Recognizer::update(const FaceEigenParams &params) {
+    int Recognizer::update(const FaceEngineParams &params) {
         verbose_ = params.verbose;
         int flag = 0;
         if (this->gpu_mode_ != params.gpuEnabled) {

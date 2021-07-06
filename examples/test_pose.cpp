@@ -17,7 +17,7 @@ int TestImages(int argc, char *argv[]) {
 
     mirror::PoseEngine *pose_engine = PoseEngine::GetInstancePtr();
 
-    PoseEigenParams params;
+    PoseEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
 //	params.poseEstimationType = PoseEstimationType::LIGHT_OPEN_POSE;
@@ -61,7 +61,7 @@ int TestVideos(int argc, char *argv[]) {
     }
 
     mirror::PoseEngine *pose_engine = PoseEngine::GetInstancePtr();
-    PoseEigenParams params;
+    PoseEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
 //	params.poseEstimationType = PoseEstimationType::LIGHT_OPEN_POSE;

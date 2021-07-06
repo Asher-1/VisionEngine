@@ -36,7 +36,7 @@ namespace mirror {
         nets_.clear();
     }
 
-    int FaceAntiSpoofing::load(const FaceEigenParams &params) {
+    int FaceAntiSpoofing::load(const FaceEngineParams &params) {
         verbose_ = params.verbose;
         // update if given
         if (params.livingThreshold > 0) {
@@ -64,10 +64,8 @@ namespace mirror {
         opt.num_threads = num_threads;
 
 #if NCNN_VULKAN
-        this->gpu_mode_ = params.gpuEnabled;
-        if (ncnn::get_gpu_count() != 0) {
-            opt.use_vulkan_compute = this->gpu_mode_;
-        }
+        this->gpu_mode_ = params.gpuEnabled && ncnn::get_gpu_count() > 0;
+        opt.use_vulkan_compute = this->gpu_mode_;
 #endif // NCNN_VULKAN
 
         model_num_ = static_cast<int>(configs_.size());
@@ -97,7 +95,7 @@ namespace mirror {
         return flag;
     }
 
-    int FaceAntiSpoofing::update(const FaceEigenParams &params) {
+    int FaceAntiSpoofing::update(const FaceEngineParams &params) {
         verbose_ = params.verbose;
         int flag = 0;
         if (this->gpu_mode_ != params.gpuEnabled) {

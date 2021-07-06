@@ -9,7 +9,7 @@
 using namespace mirror;
 
 static const bool use_gpu = false;
-static const bool use_living = false;
+static const bool use_living = true;
 static const char *model_path = "../../data/models";
 
 
@@ -20,7 +20,7 @@ int TestDetector(int argc, char **argv) {
     cv::Mat img_src = cv::imread(img_file);
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
 //    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
@@ -56,7 +56,7 @@ int TestLandmark(int argc, char *argv[]) {
     cv::Mat img_src = cv::imread(img_file);
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceLandMarkerEnabled = true;
@@ -99,7 +99,7 @@ int TestRecognize(int argc, char *argv[]) {
     cv::Mat img_src = cv::imread(img_file);
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     face_engine->loadModel(params);
@@ -150,7 +150,7 @@ int TestAlignFace(int argc, char *argv[]) {
     const bool use_landmark = false;
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceLandMarkerEnabled = use_landmark;
@@ -204,7 +204,7 @@ int TestDatabase(int argc, char *argv[]) {
     bool show_aligned = false;
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
 //    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
@@ -269,7 +269,7 @@ int TestMask(int argc, char *argv[]) {
     cv::Mat img_src = cv::imread(img_file);
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceDetectorType = FaceDetectorType::ANTICOV_FACE;
@@ -320,8 +320,9 @@ int TestTrack(int argc, char *argv[]) {
     }
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEigenParams params;
+    FaceEngineParams params;
     params.modelPath = model_path;
+    params.threadNum = 4;
     params.gpuEnabled = use_gpu;
     params.livingThreshold = 0.915;
 //    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
@@ -358,7 +359,7 @@ int TestTrack(int argc, char *argv[]) {
             int next_y = utility::DrawText(frame, roi.tl(), text);
 
             bool is_living = true;
-            if (use_living) {
+            if (params.faceAntiSpoofingEnabled) {
                 float livingScore;
                 is_living = face_engine->detectLivingFace(frame, roi, livingScore);
                 cv::rectangle(frame, tracked_face_info.face_info_.location_,
@@ -377,7 +378,6 @@ int TestTrack(int argc, char *argv[]) {
 
             // face recognition
             if (is_living) {
-
                 // align face
                 cv::Mat faceAligned;
                 std::vector<cv::Point2f> keyPoints;

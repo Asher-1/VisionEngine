@@ -139,8 +139,8 @@ namespace utility {
                 cv::line(img_src, limbKeypoints.first, limbKeypoints.second, color, thickness);
             }
 
-            if (pose.boxInfos.location_.area() > 10) {
-                cv::rectangle(img_src, pose.boxInfos.location_, color, thickness);
+            if (pose.boxInfo.location_.area() > 10) {
+                cv::rectangle(img_src, pose.boxInfo.location_, color, thickness);
             }
         }
 

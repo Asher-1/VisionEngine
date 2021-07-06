@@ -15,8 +15,8 @@ namespace mirror {
 
         virtual ~Recognizer();
 
-        int load(const FaceEigenParams &params);
-        int update(const FaceEigenParams &params);
+        int load(const FaceEngineParams &params);
+        int update(const FaceEngineParams &params);
 
         int extract(const cv::Mat &img_face, std::vector<float> &feature) const;
 

@@ -1,5 +1,6 @@
 #include "Classifier.h"
 #include "mobilenet/Mobilenet.h"
+#include "squeezenet/SqueezeNet.h"
 
 #include <ncnn/net.h>
 #include <ncnn/cpu.h>
@@ -11,7 +12,7 @@ namespace mirror {
     Classifier::Classifier(ClassifierType type) :
             type_(type),
             net_(new ncnn::Net()),
-            topk_(5),
+            topk_(3),
             verbose_(false),
             gpu_mode_(false),
             initialized_(false),
@@ -36,18 +37,6 @@ namespace mirror {
 
         return 0;
     }
-
-#if defined __ANDROID__
-    int Classifier::loadModel(AAssetManager* mgr, const char* params, const char* models)
-    {
-        if (net_->load_param(mgr, params) == -1 ||
-            net_->load_model(mgr, models) == -1) {
-            return ErrorCode::MODEL_LOAD_ERROR;
-        }
-
-        return 0;
-    }
-#endif
 
     int Classifier::loadLabels(const char *label_path) {
         FILE *fp = fopen(label_path, "r");
@@ -74,7 +63,44 @@ namespace mirror {
         return 0;
     }
 
-    int Classifier::load(const ClassifierEigenParams &params) {
+
+#if defined __ANDROID__
+    int Classifier::loadModel(AAssetManager* mgr, const char* params, const char* models)
+    {
+        if (net_->load_param(mgr, params) == -1 ||
+            net_->load_model(mgr, models) == -1) {
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        return 0;
+    }
+
+    int Classifier::loadLabels(AAssetManager *mgr, const char *label_path) {
+        AAsset *asset = AAssetManager_open(mgr, label_path, AASSET_MODE_BUFFER);
+        if (!asset) {
+            std::cout << "open label file :" << label_path << " failed!" << std::endl;
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        int len = AAsset_getLength(asset);
+
+        std::string words_buffer;
+        words_buffer.resize(len);
+        int ret = AAsset_read(asset, (void *) words_buffer.data(), len);
+        AAsset_close(asset);
+
+        if (ret != len) {
+            std::cout << "read label file :" << label_path << " failed!" << std::endl;
+            return ErrorCode::MODEL_LOAD_ERROR;
+        }
+
+        class_names_.clear();
+        SplitString(words_buffer, "\n", 10, class_names_);
+        return 0;
+    }
+#endif
+
+    int Classifier::load(const ClassifierEngineParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
         if (params.topK > 0) {
@@ -96,8 +122,8 @@ namespace mirror {
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
         int num_threads = max_thread_num;
-        if (params.thread_num > 0 && params.thread_num < max_thread_num) {
-            num_threads = params.thread_num;
+        if (params.threadNum > 0 && params.threadNum < max_thread_num) {
+            num_threads = params.threadNum;
         }
         ncnn::set_omp_num_threads(num_threads);
         opt.num_threads = num_threads;
@@ -128,7 +154,7 @@ namespace mirror {
         return flag;
     }
 
-    int Classifier::update(const ClassifierEigenParams &params) {
+    int Classifier::update(const ClassifierEngineParams &params) {
         verbose_ = params.verbose;
         int flag = 0;
         if (this->gpu_mode_ != params.gpuEnabled) {
@@ -177,4 +203,7 @@ namespace mirror {
         return new Mobilenet();
     }
 
+    Classifier *SqueezeNetFactory::createClassifier() const {
+        return new SqueezeNet();
+    }
 }

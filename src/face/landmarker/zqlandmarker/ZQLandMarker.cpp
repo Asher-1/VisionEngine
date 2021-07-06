@@ -29,7 +29,9 @@ namespace mirror {
         cv::Mat img_face = img_src(face).clone();
         ncnn::Extractor ex = net_->create_extractor();
 #if NCNN_VULKAN
-        ex.set_vulkan_compute(this->gpu_mode_);
+        if (this->gpu_mode_) {
+            ex.set_vulkan_compute(this->gpu_mode_);
+        }
 #endif
         ncnn::Mat in = ncnn::Mat::from_pixels_resize(img_face.data,
                                                      ncnn::Mat::PIXEL_BGR, img_face.cols,

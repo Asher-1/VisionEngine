@@ -23,7 +23,54 @@ namespace mirror {
             }
         }
 
-        inline int LoadModel(const ObjectEigenParams &params) {
+        inline void PrintConfigurations(const ObjectEngineParams &params) const {
+            std::cout << "--------------Object Configuration--------------" << std::endl;
+            std::string configureInfo;
+            configureInfo += std::string("GPU: ") + (params.gpuEnabled ? "True" : "False");
+            configureInfo += std::string("\nVerbose: ") + (params.verbose ? "True" : "False");
+            configureInfo += "\nModel path: " + params.modelPath;
+
+            configureInfo += std::string("\nnmsThreshold: ") + std::to_string(params.nmsThreshold);
+            if (params.objectDetectorType == ObjectDetectorType::YOLOV4) {
+                std::string modelName;
+                if (params.modeType == ErrorCode::SUCCESS) {
+                    modelName = "yolov4-tiny-opt";
+                } else if (params.modeType == 1) {
+                    modelName = "MobileNetV2-YOLOv3-Nano-coco";
+                } else if (params.modeType == 2) {
+                    modelName = "yolo-fastest-opt";
+                }
+                configureInfo += std::string("\nmodeType: ") + modelName;
+            }
+            configureInfo += std::string("\nscoreThreshold: ") + std::to_string(params.scoreThreshold);
+            configureInfo += std::string("\nthread number: ") + std::to_string(params.threadNum);
+
+            if (object_detector_) {
+                configureInfo += "\nObject detector type: " + GetObjectDetectorTypeName(object_detector_->getType());
+            }
+
+            std::cout << configureInfo << std::endl;
+            std::cout << "------------------------------------------------" << std::endl;
+        }
+
+        inline int UpdateModel(const ObjectEngineParams &params) {
+            if (!object_detector_ || object_detector_->getType() != params.objectDetectorType) {
+                return LoadModel(params);
+            }
+
+            if (object_detector_->update(params) != ErrorCode::SUCCESS) {
+                std::cout << "update object detector model failed." << std::endl;
+                initialized_ = false;
+                return ErrorCode::MODEL_UPDATE_ERROR;
+            }
+
+            PrintConfigurations(params);
+
+            initialized_ = true;
+            return ErrorCode::SUCCESS;
+        }
+
+        inline int LoadModel(const ObjectEngineParams &params) {
             if (object_detector_ && object_detector_->getType() != params.objectDetectorType) {
                 destroyObjectDetector();
             }
@@ -41,20 +88,22 @@ namespace mirror {
                         break;
                 }
 
-                if (!object_detector_ || object_detector_->load(params) != 0) {
+                if (!object_detector_ || object_detector_->load(params) != ErrorCode::SUCCESS) {
                     std::cout << "load object detector failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
             }
 
-            if (object_detector_->update(params) != 0) {
+            if (object_detector_->update(params) != ErrorCode::SUCCESS) {
                 std::cout << "update object detector model failed." << std::endl;
                 initialized_ = false;
                 return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
+            PrintConfigurations(params);
+
             initialized_ = true;
-            return 0;
+            return ErrorCode::SUCCESS;
         }
 
         inline int Detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {
@@ -108,8 +157,12 @@ namespace mirror {
         }
     }
 
-    int ObjectEngine::loadModel(const ObjectEigenParams &params) {
+    int ObjectEngine::loadModel(const ObjectEngineParams &params) {
         return impl_->LoadModel(params);
+    }
+
+    int ObjectEngine::updateModel(const ObjectEngineParams &params) {
+        return impl_->UpdateModel(params);
     }
 
     int ObjectEngine::detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const {

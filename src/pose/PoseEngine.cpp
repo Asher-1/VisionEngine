@@ -31,7 +31,24 @@ namespace mirror {
             return pose_detector_->getJointPairs();
         }
 
-        inline int LoadModel(const PoseEigenParams &params) {
+        inline void PrintConfigurations(const PoseEngineParams &params) const {
+            std::cout << "--------------Pose Configuration--------------" << std::endl;
+            std::string configureInfo;
+            configureInfo += std::string("GPU: ") + (params.gpuEnabled ? "True" : "False");
+            configureInfo += std::string("\nVerbose: ") + (params.verbose ? "True" : "False");
+            configureInfo += "\nModel path: " + params.modelPath;
+
+            configureInfo += std::string("\nthread number: ") + std::to_string(params.threadNum);
+
+            if (pose_detector_) {
+                configureInfo += "\nPose detector type: " + GetPoseEstimationTypeName(pose_detector_->getType());
+            }
+
+            std::cout << configureInfo << std::endl;
+            std::cout << "---------------------------------------------" << std::endl;
+        }
+
+        inline int LoadModel(const PoseEngineParams &params) {
             if (pose_detector_ && pose_detector_->getType() != params.poseEstimationType) {
                 destroyPoseDetector();
             }
@@ -46,20 +63,39 @@ namespace mirror {
                         break;
                 }
 
-                if (!pose_detector_ || pose_detector_->load(params) != 0) {
+                if (!pose_detector_ || pose_detector_->load(params) != ErrorCode::SUCCESS) {
                     std::cout << "load pose detector failed." << std::endl;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
             }
 
-            if (pose_detector_->update(params) != 0) {
+            if (pose_detector_->update(params) != ErrorCode::SUCCESS) {
                 std::cout << "update pose detector model failed." << std::endl;
                 initialized_ = false;
                 return ErrorCode::MODEL_UPDATE_ERROR;
             }
 
+            PrintConfigurations(params);
+
             initialized_ = true;
-            return 0;
+            return ErrorCode::SUCCESS;
+        }
+
+        inline int UpdateModel(const PoseEngineParams &params) {
+            if (!pose_detector_ || pose_detector_->getType() != params.poseEstimationType) {
+                return LoadModel(params);
+            }
+
+            if (pose_detector_->update(params) != ErrorCode::SUCCESS) {
+                std::cout << "update pose detector model failed." << std::endl;
+                initialized_ = false;
+                return ErrorCode::MODEL_UPDATE_ERROR;
+            }
+
+            PrintConfigurations(params);
+
+            initialized_ = true;
+            return ErrorCode::SUCCESS;
         }
 
         inline int Detect(const cv::Mat &img_src, std::vector<PoseResult> &poses) const {
@@ -113,8 +149,12 @@ namespace mirror {
         }
     }
 
-    int PoseEngine::loadModel(const PoseEigenParams &params) {
+    int PoseEngine::loadModel(const PoseEngineParams &params) {
         return impl_->LoadModel(params);
+    }
+
+    int PoseEngine::updateModel(const PoseEngineParams &params) {
+        return impl_->UpdateModel(params);
     }
 
     int PoseEngine::detect(const cv::Mat &img_src, std::vector<PoseResult> &poses) const {

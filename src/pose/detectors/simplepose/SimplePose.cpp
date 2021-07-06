@@ -92,7 +92,7 @@ namespace mirror {
         in.substract_mean_normalize(mean, norm);
 
         auto ex = PersonNet->create_extractor();
-        if (this->gpu_mode_) {  // 消除提示
+        if (this->gpu_mode_) {
             ex.set_vulkan_compute(this->gpu_mode_);
         }
         ex.input("data", in);
@@ -108,10 +108,10 @@ namespace mirror {
             score = values[1];
             label = values[0];
 
-            x1 = values[2] * img_width  ;
-            y1 = values[3] * img_height ;
-            x2 = values[4] * img_width  ;
-            y2 = values[5] * img_height ;
+            x1 = values[2] * img_width;
+            y1 = values[3] * img_height;
+            x2 = values[4] * img_width;
+            y2 = values[5] * img_height;
             if (std::isnan(x1) || std::isnan(y1) || std::isnan(x2) || std::isnan(y2)) {
                 continue;
             }
@@ -142,12 +142,12 @@ namespace mirror {
             cv::Mat roi = img_cpy(cv::Rect(x1, y1, x2 - x1, y2 - y1)).clone();
             this->runPose(roi, x1, y1, poseResult.keyPoints);
 
-            poseResult.boxInfos.location_.x = x1;
-            poseResult.boxInfos.location_.y = y1;
-            poseResult.boxInfos.location_.width = x2 - x1;
-            poseResult.boxInfos.location_.height = y2 - y1;
-            poseResult.boxInfos.name_ = std::to_string(label);
-            poseResult.boxInfos.score_ = score;
+            poseResult.boxInfo.location_.x = x1;
+            poseResult.boxInfo.location_.y = y1;
+            poseResult.boxInfo.location_.width = x2 - x1;
+            poseResult.boxInfo.location_.height = y2 - y1;
+            poseResult.boxInfo.name_ = std::to_string(label);
+            poseResult.boxInfo.score_ = score;
 
             poses.push_back(poseResult);
         }
@@ -162,9 +162,11 @@ namespace mirror {
         in.substract_mean_normalize(meanVals, normVals);
 
         auto ex = net_->create_extractor();
-        if (this->gpu_mode_) {  // 消除提示
+#if NCNN_VULKAN
+        if (this->gpu_mode_) {
             ex.set_vulkan_compute(this->gpu_mode_);
         }
+#endif
         ex.input("data", in);
         ncnn::Mat out;
         ex.extract("hybridsequential0_conv7_fwd", out);

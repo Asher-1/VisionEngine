@@ -9,6 +9,8 @@
 static const bool use_gpu = true;
 const char *root_path = "../../data/models";
 
+
+
 int TestImages(int argc, char *argv[]) {
     std::cout << "Image Classification Test......" << std::endl;
     const char *img_path = "../../data/images/dog.jpg";
@@ -16,10 +18,11 @@ int TestImages(int argc, char *argv[]) {
 
     mirror::ClassifierEngine *classifier_engine = mirror::ClassifierEngine::GetInstancePtr();
 
-    mirror::ClassifierEigenParams params;
+    mirror::ClassifierEngineParams params;
     params.modelPath = root_path;
     params.gpuEnabled = use_gpu;
     params.topK = 3;
+//    params.classifierType = mirror::ClassifierType::SQUEEZE_NET;
     classifier_engine->loadModel(params);
     double start = static_cast<double>(cv::getTickCount());
     std::vector<mirror::ImageInfo> images;
@@ -58,10 +61,11 @@ int TestVideos(int argc, char *argv[]) {
     }
 
     mirror::ClassifierEngine *classifier_engine = mirror::ClassifierEngine::GetInstancePtr();
-    mirror::ClassifierEigenParams params;
+    mirror::ClassifierEngineParams params;
     params.modelPath = root_path;
     params.gpuEnabled = use_gpu;
     params.topK = 3;
+//    params.classifierType = mirror::ClassifierType::SQUEEZE_NET;
     classifier_engine->loadModel(params);
 
     cv::Mat frame;

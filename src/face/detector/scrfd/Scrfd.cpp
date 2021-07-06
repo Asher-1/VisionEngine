@@ -187,7 +187,9 @@ namespace mirror {
 
         ncnn::Extractor ex = net_->create_extractor();
 #if NCNN_VULKAN
-        ex.set_vulkan_compute(this->gpu_mode_);
+        if (this->gpu_mode_) {
+            ex.set_vulkan_compute(this->gpu_mode_);
+        }
 #endif
         ex.input("input.1", in_pad);
 

@@ -52,7 +52,7 @@ namespace mirror {
     }
 #endif
 
-    int Detector::load(const FaceEigenParams &params) {
+    int Detector::load(const FaceEngineParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
         // update if given
@@ -85,10 +85,8 @@ namespace mirror {
         opt.num_threads = num_threads;
 
 #if NCNN_VULKAN
-        this->gpu_mode_ = params.gpuEnabled;
-        if (ncnn::get_gpu_count() != 0) {
-            opt.use_vulkan_compute = this->gpu_mode_;
-        }
+        this->gpu_mode_ = params.gpuEnabled && ncnn::get_gpu_count() > 0;
+        opt.use_vulkan_compute = this->gpu_mode_;
 #endif // NCNN_VULKAN
 
         this->net_->opt = opt;
@@ -148,7 +146,7 @@ namespace mirror {
         return flag;
     }
 
-    int Detector::update(const FaceEigenParams &params) {
+    int Detector::update(const FaceEngineParams &params) {
         verbose_ = params.verbose;
         int flag = 0;
         if (this->gpu_mode_ != params.gpuEnabled) {

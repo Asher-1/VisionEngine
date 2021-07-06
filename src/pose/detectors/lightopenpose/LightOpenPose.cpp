@@ -538,6 +538,11 @@ namespace mirror {
         ncnn::Mat pafs;
         ncnn::Mat heatmaps;
         ncnn::Extractor ex = net_->create_extractor();
+#if NCNN_VULKAN
+        if (this->gpu_mode_) {
+            ex.set_vulkan_compute(this->gpu_mode_);
+        }
+#endif
         ex.input("data", in);
         ex.extract("stage_1_output_1_heatmaps", heatmaps);  // or stage_0_output_1_heatmaps
         ex.extract("stage_1_output_0_pafs", pafs);          // or stage_0_output_0_pafs

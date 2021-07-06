@@ -15,20 +15,20 @@ int TestImages(int argc, char *argv[]) {
     const char *img_path = "../../data/images/playground.jpg";
     cv::Mat img_src = cv::imread(img_path);
 
-    SegmentEngine *pose_engine = SegmentEngine::GetInstancePtr();
+    SegmentEngine *seg_engine = SegmentEngine::GetInstancePtr();
 
-    SegmentEigenParams params;
+    SegmentEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
-    params.segmentType = SegmentType::YOLACT_SEG;
-//    params.segmentType = SegmentType::MOBILENETV3_SEG;
-    pose_engine->loadModel(params);
+//    params.segmentType = SegmentType::YOLACT_SEG;
+    params.segmentType = SegmentType::MOBILENETV3_SEG;
+    seg_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
 
     // detect mask
     std::vector<SegmentInfo> segments;
-    pose_engine->detect(img_src, segments);
+    seg_engine->detect(img_src, segments);
 
     double end = static_cast<double>(cv::getTickCount());
     double time_cost = (end - start) / cv::getTickFrequency() * 1000;
@@ -45,7 +45,7 @@ int TestImages(int argc, char *argv[]) {
     std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
 #endif
 
-    pose_engine->destroyEngine();
+    seg_engine->destroyEngine();
     return 0;
 }
 
@@ -62,13 +62,13 @@ int TestVideos(int argc, char *argv[]) {
         return -1;
     }
 
-    SegmentEngine *pose_engine = SegmentEngine::GetInstancePtr();
-    SegmentEigenParams params;
+    SegmentEngine *seg_engine = SegmentEngine::GetInstancePtr();
+    SegmentEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
     params.segmentType = SegmentType::YOLACT_SEG;
 //    params.segmentType = SegmentType::MOBILENETV3_SEG;
-    pose_engine->loadModel(params);
+    seg_engine->loadModel(params);
 
     cv::Mat frame;
     while (true) {
@@ -81,7 +81,7 @@ int TestVideos(int argc, char *argv[]) {
 
         // detect mask
         std::vector<SegmentInfo> segments;
-        pose_engine->detect(frame, segments);
+        seg_engine->detect(frame, segments);
         utility::DrawMask(frame, segments, int(params.segmentType));
 
         double end = static_cast<double>(cv::getTickCount());
@@ -106,7 +106,7 @@ int TestVideos(int argc, char *argv[]) {
         }
     }
 
-    pose_engine->destroyEngine();
+    seg_engine->destroyEngine();
 #else
     std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
 #endif

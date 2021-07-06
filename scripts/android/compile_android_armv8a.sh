@@ -6,8 +6,8 @@ cd build-android-armv8a
 
 NCNN_VULKAN=ON
 if [ $# != 3 ]; then
-  NCNN_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/jni/ncnn-20210525-android-vulkan"
-  OPENCV_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/jni/opencv-mobile-4.5.1-android"
+  NCNN_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/cpp/ncnn-20210525-android-vulkan"
+  OPENCV_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/cpp/opencv-mobile-4.5.1-android"
   ANDROID_NDK="/media/yons/data/develop/Android/Sdk/ndk/21.4.7075529"
 else
   NCNN_PATH="$1"

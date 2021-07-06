@@ -17,9 +17,9 @@ namespace mirror {
 
         virtual ~ObjectDetector();
 
-        int load(const ObjectEigenParams &params);
+        int load(const ObjectEngineParams &params);
 
-        int update(const ObjectEigenParams &params);
+        int update(const ObjectEngineParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const;
 

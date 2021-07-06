@@ -48,7 +48,7 @@ namespace mirror {
     }
 #endif
 
-    int PoseDetector::load(const PoseEigenParams &params) {
+    int PoseDetector::load(const PoseEngineParams &params) {
         if (!net_) return ErrorCode::NULL_ERROR;
         verbose_ = params.verbose;
         if (verbose_) {
@@ -67,8 +67,8 @@ namespace mirror {
 #endif
         int max_thread_num = ncnn::get_big_cpu_count();
         int num_threads = max_thread_num;
-        if (params.thread_num > 0 && params.thread_num < max_thread_num) {
-            num_threads = params.thread_num;
+        if (params.threadNum > 0 && params.threadNum < max_thread_num) {
+            num_threads = params.threadNum;
         }
         ncnn::set_omp_num_threads(num_threads);
         opt.num_threads = num_threads;
@@ -99,7 +99,7 @@ namespace mirror {
         return flag;
     }
 
-    int PoseDetector::update(const PoseEigenParams &params) {
+    int PoseDetector::update(const PoseEngineParams &params) {
         verbose_ = params.verbose;
         int flag = 0;
         if (this->gpu_mode_ != params.gpuEnabled) {

@@ -3,8 +3,8 @@
 INSTALL_DIR=visionEngine-android-vulkan
 
 ANDROID_NDK="/media/yons/data/develop/Android/Sdk/ndk/21.4.7075529"
-NCNN_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/jni/ncnn-20210525-android-vulkan"
-OPENCV_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/jni/opencv-mobile-4.5.1-android"
+NCNN_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/cpp/ncnn-20210525-android-vulkan"
+OPENCV_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/cpp/opencv-mobile-4.5.1-android"
 
 echo 'Build android armv7!'
 sh compile_android_armv7.sh $NCNN_PATH $OPENCV_PATH $ANDROID_NDK

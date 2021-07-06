@@ -17,9 +17,9 @@ namespace mirror {
 
         virtual ~SegmentDetector();
 
-        int load(const SegmentEigenParams &params);
+        int load(const SegmentEngineParams &params);
 
-        int update(const SegmentEigenParams &params);
+        int update(const SegmentEngineParams &params);
 
         int detect(const cv::Mat &img_src, std::vector<SegmentInfo> &segments) const;
 

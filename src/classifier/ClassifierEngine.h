@@ -26,7 +26,8 @@ namespace mirror {
 
         CLASSIFIER_API void destroyEngine();
 
-        CLASSIFIER_API int loadModel(const ClassifierEigenParams &params);
+        CLASSIFIER_API int loadModel(const ClassifierEngineParams &params);
+        CLASSIFIER_API int updateModel(const ClassifierEngineParams &params);
 
         CLASSIFIER_API int classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const;
 
