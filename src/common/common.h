@@ -39,7 +39,7 @@ namespace mirror {
     }
 
 
-    // for classifier module
+    // for classifiers module
     enum ClassifierType {
         MOBILE_NET = 0,
         SQUEEZE_NET = 1,

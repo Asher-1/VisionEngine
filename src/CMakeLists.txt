@@ -12,10 +12,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fPIC -std=c++11 -fopenmp")
 add_library(VisionEngine STATIC ${SRC_FILES})
 
 if (MIRROR_BUILD_ANDROID)
-    set(NCNN_PATH "" CACHE PATH "Ncnn root directory" )
+    set(NCNN_PATH "" CACHE PATH "Ncnn root directory")
     set(OPENCV_PATH "" CACHE PATH "Opencv root directory")
 else ()
-    set(NCNN_PATH "${CMAKE_SOURCE_DIR}/lib/ncnn-20210525-ubuntu-1804" CACHE PATH "Ncnn root directory" )
+    set(NCNN_PATH "${CMAKE_SOURCE_DIR}/lib/ncnn-20210525-ubuntu-1804" CACHE PATH "Ncnn root directory")
     set(OPENCV_PATH "${CMAKE_SOURCE_DIR}/lib/opencv-mobile-4.5.1-ubuntu-1804" CACHE PATH "Opencv root directory")
 endif ()
 
@@ -91,7 +91,7 @@ target_include_directories(VisionEngine
 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/common>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/object>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/yolov4>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/yolov5>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/mobilenetssd>
@@ -107,8 +107,10 @@ target_include_directories(VisionEngine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/segment/detectors/mobilenetv3>
 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifier>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifier/mobilenet>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifiers>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifiers/mobilenet>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifiers/squeezenet>
         )
 
 if (MIRROR_INSTALL_SDK)

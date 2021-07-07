@@ -108,7 +108,7 @@ namespace mirror {
         }
 
         if (verbose_) {
-            std::cout << "start load classifier model: "
+            std::cout << "start load classifiers model: "
                       << GetClassifierTypeName(this->type_) << std::endl;
         }
 
@@ -143,12 +143,12 @@ namespace mirror {
 
         if (flag != 0) {
             initialized_ = false;
-            std::cout << "load classifier model: " <<
+            std::cout << "load classifiers model: " <<
                       GetClassifierTypeName(this->type_) << " failed!" << std::endl;
         } else {
             initialized_ = true;
             if (verbose_) {
-                std::cout << "end load classifier model." << std::endl;
+                std::cout << "end load classifiers model." << std::endl;
             }
         }
         return flag;
@@ -171,7 +171,7 @@ namespace mirror {
     int Classifier::classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const {
         images.clear();
         if (!initialized_) {
-            std::cout << "object classifier model: "
+            std::cout << "object classifiers model: "
                       << GetClassifierTypeName(this->type_)
                       << " uninitialized!" << std::endl;
             return ErrorCode::UNINITIALIZED_ERROR;

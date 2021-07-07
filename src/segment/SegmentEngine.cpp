@@ -72,7 +72,7 @@ namespace mirror {
             PrintConfigurations(params);
 
             initialized_ = true;
-            return 0;
+            return ErrorCode::MODEL_UPDATE_ERROR;
         }
 
         inline int UpdateModel(const SegmentEngineParams &params) {

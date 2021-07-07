@@ -1,5 +1,5 @@
 #include "ClassifierEngine.h"
-#include "classifier/Classifier.h"
+#include "classifiers/Classifier.h"
 #include "../common/Singleton.h"
 
 #include <string>
@@ -37,7 +37,7 @@ namespace mirror {
             configureInfo += std::string("\nthread number: ") + std::to_string(params.threadNum);
 
             if (classifier_) {
-                configureInfo += "\nclassifier type: " + GetClassifierTypeName(classifier_->getType());
+                configureInfo += "\nclassifiers type: " + GetClassifierTypeName(classifier_->getType());
             }
 
             std::cout << configureInfo << std::endl;
@@ -60,14 +60,14 @@ namespace mirror {
                 }
 
                 if (!classifier_ || classifier_->load(params) != ErrorCode::SUCCESS) {
-                    std::cout << "load object classifier failed." << std::endl;
+                    std::cout << "load object classifiers failed." << std::endl;
                     initialized_ = false;
                     return ErrorCode::MODEL_LOAD_ERROR;
                 }
             }
 
             if (classifier_->update(params) != ErrorCode::SUCCESS) {
-                std::cout << "update object classifier model failed." << std::endl;
+                std::cout << "update object classifiers model failed." << std::endl;
                 initialized_ = false;
                 return ErrorCode::MODEL_UPDATE_ERROR;
             }
@@ -84,7 +84,7 @@ namespace mirror {
             }
 
             if (classifier_->update(params) != ErrorCode::SUCCESS) {
-                std::cout << "update object classifier model failed." << std::endl;
+                std::cout << "update object classifiers model failed." << std::endl;
                 initialized_ = false;
                 return ErrorCode::MODEL_UPDATE_ERROR;
             }
@@ -97,7 +97,7 @@ namespace mirror {
 
         int Classify(const cv::Mat &img_src, std::vector<ImageInfo> &images) const {
             if (!initialized_ || !classifier_) {
-                std::cout << "object classifier model uninitialized!" << std::endl;
+                std::cout << "object classifiers model uninitialized!" << std::endl;
                 return ErrorCode::UNINITIALIZED_ERROR;
             }
             return classifier_->classify(img_src, images);
