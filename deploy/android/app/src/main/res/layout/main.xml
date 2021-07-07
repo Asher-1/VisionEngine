@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonSwitchCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="切换摄像头" />
+
+        <Button
+            android:id="@+id/buttonRegisterFace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="注册人脸" />
+
+        <Button
+            android:id="@+id/buttonDeleteFace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="删除人脸" />
+
+        <Button
+            android:id="@+id/buttonResetFaces"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重置人脸库" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/detModel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/det_array" />
+
+        <Spinner
+            android:id="@+id/recModel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/rec_array" />
+
+        <Spinner
+            android:id="@+id/toggleCpuGpuModel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/cpugpu_array" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/toggleRec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/toggle_rec_array" />
+
+        <Spinner
+            android:id="@+id/toggleKps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/toggle_kps_array" />
+
+        <Spinner
+            android:id="@+id/toggleLive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/toggle_live_array" />
+
+    </LinearLayout>
+
+    <SurfaceView
+        android:id="@+id/cameraview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+</LinearLayout>

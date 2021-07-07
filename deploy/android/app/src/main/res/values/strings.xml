@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FaceEngine</string>
+    <string-array name="det_array">
+        <item>retinaface</item>
+        <item>scrfd_face</item>
+        <item>centerface</item>
+        <item>mtcnnface</item>
+        <item>anticovface</item>
+    </string-array>
+    <string-array name="rec_array">
+        <item>arc_face</item>
+    </string-array>
+    <string-array name="toggle_rec_array">
+        <item>关人脸识别</item>
+        <item>开人脸识别</item>
+    </string-array>
+    <string-array name="toggle_live_array">
+        <item>关活体检测</item>
+        <item>开活体检测</item>
+    </string-array>
+    <string-array name="toggle_kps_array">
+        <item>关关键点</item>
+        <item>开关键点</item>
+    </string-array>
+    <string-array name="cpugpu_array">
+        <item>CPU</item>
+        <item>GPU</item>
+    </string-array>
+</resources>
