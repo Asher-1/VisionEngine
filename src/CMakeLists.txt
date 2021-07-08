@@ -31,6 +31,8 @@ else ()
     else ()
         if (MIRROR_BUILD_ANDROID)
             set(OpenCV_DIR ${OPENCV_PATH}/sdk/native/jni/abi-${ANDROID_ABI})
+        elseif (MIRROR_BUILD_IOS OR APPLE)
+            set(OpenCV_DIR ${OPENCV_PATH})
         else ()
             set(OpenCV_DIR ${OPENCV_PATH}/lib/cmake/opencv4)
         endif ()
@@ -41,6 +43,9 @@ else ()
     if (MIRROR_BUILD_ANDROID)
         include_directories(${NCNN_PATH}/${ANDROID_ABI}/include)
         set(ncnn_DIR ${NCNN_PATH}/${ANDROID_ABI}/lib/cmake/ncnn)
+    elseif (MIRROR_BUILD_IOS OR APPLE)
+        include_directories(${NCNN_PATH}/ncnn.framework/Headers)
+        set(ncnn_DIR ${NCNN_PATH})
     else ()
         include_directories(${NCNN_PATH}/include)
         set(ncnn_DIR ${NCNN_PATH}/lib/cmake/ncnn)
@@ -94,6 +99,7 @@ target_include_directories(VisionEngine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/yolov4>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/yolov5>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/nanodet>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/object/detectors/mobilenetssd>
 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/pose>
@@ -131,7 +137,14 @@ if (MIRROR_INSTALL_SDK)
 
     if (MIRROR_INSTALL_EXAMPLES)
         # install binaries
-        if (MSVC)
+        if (UNIX)
+            install(FILES
+                    ${PROJECT_BINARY_DIR}/src/face
+                    ${PROJECT_BINARY_DIR}/src/object
+                    ${PROJECT_BINARY_DIR}/src/classifier
+                    DESTINATION ${PROJECT_BINARY_DIR}/bin
+                    )
+        elseif (WIN32)
             install(FILES
                     ${PROJECT_BINARY_DIR}/src/face.exe
                     ${PROJECT_BINARY_DIR}/src/object.exe
@@ -139,6 +152,7 @@ if (MIRROR_INSTALL_SDK)
                     DESTINATION ${PROJECT_BINARY_DIR}/bin
                     )
         else ()
+            set_target_properties(VisionEngine PROPERTIES FRAMEWORK TRUE)
             install(FILES
                     ${PROJECT_BINARY_DIR}/src/face
                     ${PROJECT_BINARY_DIR}/src/object

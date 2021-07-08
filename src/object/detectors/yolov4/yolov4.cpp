@@ -102,7 +102,7 @@ namespace mirror {
             objects.push_back(object);
         }
 
-        return 0;
+        return ErrorCode::SUCCESS;
     }
 
 }

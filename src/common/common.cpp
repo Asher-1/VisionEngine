@@ -189,10 +189,12 @@ namespace mirror {
                 return "YOLOV4";
             case YOLOV5:
                 return "YOLOV5";
+            case NANO_DET:
+                return "NANO_DET";
             case MOBILENET_SSD:
                 return "MOBILENET_SSD";
             default:
-                return "YOLOV5";
+                return "YOLOV4";
         }
     }
 

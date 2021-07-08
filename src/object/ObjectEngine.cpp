@@ -83,6 +83,9 @@ namespace mirror {
                     case YOLOV5:
                         object_detector_ = Yolov5Factory().createDetector();
                         break;
+                    case NANO_DET:
+                        object_detector_ = NanoDetFactory().createDetector();
+                        break;
                     case MOBILENET_SSD:
                         object_detector_ = MobilenetSSDFactory().createDetector();
                         break;

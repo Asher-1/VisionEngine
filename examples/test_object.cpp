@@ -21,6 +21,7 @@ int TestImages(int argc, char *argv[]) {
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
     params.modeType = 2; // bugs: params.modeType = 0 and use_gpu=true;
+//	params.objectDetectorType = ObjectDetectorType::NANO_DET;
 //	params.objectDetectorType = ObjectDetectorType::YOLOV5;
     object_engine->loadModel(params);
 
@@ -66,6 +67,7 @@ int TestVideos(int argc, char *argv[]) {
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
     params.modeType = 2;
+//    params.objectDetectorType = ObjectDetectorType::NANO_DET;
 //	params.objectDetectorType = ObjectDetectorType::YOLOV5;
     object_engine->loadModel(params);
 

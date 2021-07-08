@@ -1,6 +1,7 @@
 #include "ObjectDetector.h"
 #include "yolov4/yolov4.h"
 #include "yolov5/yolov5.h"
+#include "nanodet/NanoDet.h"
 #include "mobilenetssd/MobilenetSSD.h"
 
 #include <ncnn/net.h>
@@ -175,5 +176,9 @@ namespace mirror {
 
     ObjectDetector *MobilenetSSDFactory::createDetector() const {
         return new MobilenetSSD();
+    }
+
+    ObjectDetector *NanoDetFactory::createDetector() const {
+        return new NanoDet();
     }
 }

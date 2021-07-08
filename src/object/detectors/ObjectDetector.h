@@ -6,6 +6,8 @@
 
 namespace ncnn {
     class Net;
+
+    class Mat;
 };
 
 namespace mirror {
@@ -57,6 +59,15 @@ namespace mirror {
         virtual ObjectDetector *createDetector() const = 0;
 
         virtual ~ObjectDetectorFactory() = default;
+    };
+
+    class NanoDetFactory : public ObjectDetectorFactory {
+    public:
+        NanoDetFactory() = default;
+
+        ObjectDetector *createDetector() const override;
+
+        ~NanoDetFactory() override = default;
     };
 
     class MobilenetSSDFactory : public ObjectDetectorFactory {

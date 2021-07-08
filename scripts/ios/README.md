@@ -2,13 +2,13 @@
 
 ## Build for MacOS
 ### Install xcode and protobuf
-```asm
+```
 # Install protobuf via homebrew
 brew install protobuf
 ```
 
 ### Download and install openmp for multithreading inference feature
-```asm
+```
 wget https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/openmp-11.0.0.src.tar.xz
 tar -xf openmp-11.0.0.src.tar.xz
 cd openmp-11.0.0.src
@@ -41,7 +41,7 @@ sudo cp libomp.a /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.pla
 ```
 
 ### Download and install Vulkan SDK from https://vulkan.lunarg.com/sdk/home
-```asm
+```
 wget https://sdk.lunarg.com/sdk/download/1.2.162.0/mac/vulkansdk-macos-1.2.162.0.dmg?Human=true -O vulkansdk-macos-1.2.162.0.dmg
 hdiutil attach vulkansdk-macos-1.2.162.0.dmg
 cp -r /Volumes/vulkansdk-macos-1.2.162.0 .
@@ -70,7 +70,7 @@ cmake --build . --target install
 
 ## Build for iOS on MacOS with xcode
 ### Download and install openmp for multithreading inference feature on iPhoneOS
-```asm
+```
 wget https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/openmp-11.0.0.src.tar.xz
 tar -xf openmp-11.0.0.src.tar.xz
 cd openmp-11.0.0.src
@@ -97,7 +97,7 @@ sudo cp install/lib/libomp.a /Applications/Xcode.app/Contents/Developer/Platform
 ```
 
 ### Download and install openmp for multithreading inference feature on iPhoneSimulator
-```asm
+```
 wget https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.0/openmp-11.0.0.src.tar.xz
 tar -xf openmp-11.0.0.src.tar.xz
 cd openmp-11.0.0.src
@@ -124,7 +124,7 @@ sudo cp install/lib/libomp.a /Applications/Xcode.app/Contents/Developer/Platform
 ```
 
 ### Package openmp framework:
-```asm
+```
 cd <openmp-root-dir>
 
 mkdir -p openmp.framework/Versions/A/Headers
@@ -140,7 +140,7 @@ sed -e 's/__NAME__/openmp/g' -e 's/__IDENTIFIER__/org.llvm.openmp/g' -e 's/__VER
 ```
 
 ### Download and install Vulkan SDK from https://vulkan.lunarg.com/sdk/home
-```asm
+```
 wget https://sdk.lunarg.com/sdk/download/1.2.162.0/mac/vulkansdk-macos-1.2.162.0.dmg?Human=true -O vulkansdk-macos-1.2.162.0.dmg
 hdiutil attach vulkansdk-macos-1.2.162.0.dmg
 cp -r /Volumes/vulkansdk-macos-1.2.162.0 .
@@ -152,7 +152,7 @@ export VULKAN_SDK=`pwd`/vulkansdk-macos-1.2.162.0/macOS
 ```
 
 ### Build library for iPhoneOS:
-``` asm
+```
 cd <ncnn-root-dir>
 mkdir -p build-ios
 cd build-ios
@@ -180,7 +180,7 @@ cmake --build . --target install
 ```
 
 ### Build library for iPhoneSimulator:
-```asm
+```
 cd <ncnn-root-dir>
 mkdir -p build-ios-sim
 cd build-ios-sim
@@ -198,7 +198,7 @@ cmake --build . --target install
 ```
 
 ### Package glslang framework:
-```asm
+```
 cd <ncnn-root-dir>
 
 mkdir -p glslang.framework/Versions/A/Headers
@@ -217,7 +217,7 @@ sed -e 's/__NAME__/glslang/g' -e 's/__IDENTIFIER__/org.khronos.glslang/g' -e 's/
 
 
 ## Compile visionEngine for ios
-```asm
+```
 Clone: git clone 
 ```
 # How to use

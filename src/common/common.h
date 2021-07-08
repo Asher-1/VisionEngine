@@ -68,7 +68,8 @@ namespace mirror {
     enum ObjectDetectorType {
         YOLOV4 = 0,
         YOLOV5 = 1,
-        MOBILENET_SSD = 2,
+        NANO_DET = 2,
+        MOBILENET_SSD = 3,
     };
 
     std::string GetObjectDetectorTypeName(ObjectDetectorType type);
