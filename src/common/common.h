@@ -2,20 +2,17 @@
 
 #include <vector>
 #include <string>
+#include <numeric>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
 #if defined(_OPENMP)
-
 #include <omp.h>
-#include <numeric>
-
 #endif
 
 #if defined(__ANDROID__)
 #include <android/asset_manager.h>
 #endif
-
 
 namespace mirror {
 #define kFaceFeatureDim 128
