@@ -6,7 +6,6 @@
 
 namespace ncnn {
     class Net;
-
     class Mat;
 };
 
@@ -37,7 +36,6 @@ namespace mirror {
 #endif
 
         virtual int loadModel(const char *root_path) = 0;
-
         virtual int detectObject(const cv::Mat &img_src, std::vector<ObjectInfo> &objects) const = 0;
 
     protected:

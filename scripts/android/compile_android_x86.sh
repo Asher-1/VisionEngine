@@ -21,9 +21,11 @@ echo "ANDROID_NDK: $ANDROID_NDK"
 
 # If you want to enable Vulkan, platform api version >= android-24 is needed
 cmake -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+  -DANDROID_STL=c++_static -DANDROID_CPP_FEATURES="rtti exceptions" \
+  -DANDROID_ARM_NEON=ON -DANDROID_PLATFORM=android-27 \
   -DMIRROR_BUILD_ANDROID=ON -DNCNN_PATH=$NCNN_PATH -DOPENCV_PATH=$OPENCV_PATH \
   -DANDROID_ABI="x86" -DCMAKE_BUILD_TYPE="Release" \
-  -DMIRROR_BUILD_WITH_FULL_OPENCV=OFF -DANDROID_PLATFORM=android-27 -DNCNN_VULKAN=$NCNN_VULKAN ../../..
+  -DMIRROR_BUILD_WITH_FULL_OPENCV=OFF -DNCNN_VULKAN=$NCNN_VULKAN ../../..
 
 # shellcheck disable=SC2046
 make -j$(nproc)

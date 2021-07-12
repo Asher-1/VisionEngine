@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-
 message(${SRC_FILES})
 
 set(CMAKE_BUILD_TYPE "Release")
-
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fPIC -std=c++11")
+
 add_library(VisionEngine STATIC ${SRC_FILES})
 
 if (MIRROR_BUILD_ANDROID)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
     set(NCNN_PATH "" CACHE PATH "Ncnn root directory")
     set(OPENCV_PATH "" CACHE PATH "Opencv root directory")
 elseif (MIRROR_BUILD_IOS)
@@ -62,15 +63,10 @@ else ()
 
     if (MIRROR_BUILD_IOS)
         set(CMAKE_FRAMEWORK_PATH "${CMAKE_FRAMEWORK_PATH} ${NCNN_PATH} ${OPENCV_PATH}")
-        message("CMAKE_FRAMEWORK_PATH: " ${CMAKE_FRAMEWORK_PATH})
+        set(CMAKE_SYSTEM_FRAMEWORK_PATH "${CMAKE_SYSTEM_FRAMEWORK_PATH} ${NCNN_PATH} ${OPENCV_PATH}")
+        message("CMAKE_SYSTEM_FRAMEWORK_PATH: " ${CMAKE_SYSTEM_FRAMEWORK_PATH})
         set_target_properties(VisionEngine PROPERTIES
-                LINK_FLAGS "-Wl,-F${NCNN_PATH}/ncnn.framework"
-                FRAMEWORK_SEARCH_PATHS ${NCNN_PATH})
-        set_target_properties(VisionEngine PROPERTIES
-                LINK_FLAGS "-Wl,-F${NCNN_PATH}/openmp.framework"
-                FRAMEWORK_SEARCH_PATHS ${NCNN_PATH})
-        set_target_properties(VisionEngine PROPERTIES
-                LINK_FLAGS "-Wl,-F${NCNN_PATH}/glslang.framework"
+                LINK_FLAGS "-Wl,-F${NCNN_PATH}/ncnn.framework -F${NCNN_PATH}/openmp.framework -F${NCNN_PATH}/glslang.framework"
                 FRAMEWORK_SEARCH_PATHS ${NCNN_PATH})
         set_target_properties(VisionEngine PROPERTIES
                 LINK_FLAGS "-Wl,-F${OPENCV_PATH}/opencv2.framework"
@@ -91,9 +87,7 @@ endif ()
 if (MIRROR_OPENMP AND OpenMP_CXX_FOUND)
     message("Building with OpenMP")
     target_link_libraries(VisionEngine PUBLIC OpenMP::OpenMP_CXX)
-    if (MIRROR_BUILD_IOS)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -fopenmp")
-    else ()
+    if (NOT MIRROR_BUILD_IOS)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     endif ()
 endif ()
@@ -148,6 +142,14 @@ target_include_directories(VisionEngine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifiers>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifiers/mobilenet>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/classifier/classifiers/squeezenet>
+
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr/utils>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr/detectors>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr/detectors/dbnet>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr/recognizers>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ocr/recognizers/crnn>
         )
 
 if (MIRROR_INSTALL_SDK)
@@ -155,6 +157,7 @@ if (MIRROR_INSTALL_SDK)
     install(FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/common/common.h
             ${CMAKE_CURRENT_SOURCE_DIR}/utility/VisionTools.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/ocr/OcrEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/face/FaceEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/object/ObjectEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/pose/PoseEngine.h
@@ -170,6 +173,9 @@ if (MIRROR_INSTALL_SDK)
         # install binaries
         if (UNIX)
             install(FILES
+                    ${PROJECT_BINARY_DIR}/src/ocr
+                    ${PROJECT_BINARY_DIR}/src/pose
+                    ${PROJECT_BINARY_DIR}/src/segment
                     ${PROJECT_BINARY_DIR}/src/face
                     ${PROJECT_BINARY_DIR}/src/object
                     ${PROJECT_BINARY_DIR}/src/classifier
@@ -177,6 +183,9 @@ if (MIRROR_INSTALL_SDK)
                     )
         elseif (WIN32)
             install(FILES
+                    ${PROJECT_BINARY_DIR}/src/ocr.exe
+                    ${PROJECT_BINARY_DIR}/src/pose.exe
+                    ${PROJECT_BINARY_DIR}/src/segment.exe
                     ${PROJECT_BINARY_DIR}/src/face.exe
                     ${PROJECT_BINARY_DIR}/src/object.exe
                     ${PROJECT_BINARY_DIR}/src/classifier.exe
@@ -185,6 +194,9 @@ if (MIRROR_INSTALL_SDK)
         else ()
             #set_target_properties(VisionEngine PROPERTIES FRAMEWORK TRUE)
             install(FILES
+                    ${PROJECT_BINARY_DIR}/src/ocr
+                    ${PROJECT_BINARY_DIR}/src/pose
+                    ${PROJECT_BINARY_DIR}/src/segment
                     ${PROJECT_BINARY_DIR}/src/face
                     ${PROJECT_BINARY_DIR}/src/object
                     ${PROJECT_BINARY_DIR}/src/classifier
@@ -216,4 +228,8 @@ if (MIRROR_BUILD_EXAMPLES)
     # segment
     add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.cpp)
     target_link_libraries(segment PRIVATE VisionEngine)
+
+    # ocr
+    add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.cpp)
+    target_link_libraries(ocr PRIVATE VisionEngine)
 endif ()

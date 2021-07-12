@@ -198,6 +198,24 @@ namespace mirror {
         }
     }
 
+    std::string GetTextDetectorTypeName(TextDetectorType type) {
+        switch (type) {
+            case DB_NET:
+                return "DB_NET";
+            default:
+                return "DB_NET";
+        }
+    }
+
+    std::string GetTextRecognizerTypeName(TextRecognizerType type) {
+        switch (type) {
+            case CRNN_NET:
+                return "CRNN_NET";
+            default:
+                return "CRNN_NET";
+        }
+    }
+
     std::string GetPoseEstimationTypeName(PoseEstimationType type) {
         switch (type) {
             case SIMPLE_POSE:
@@ -257,5 +275,4 @@ namespace mirror {
         // To get the last substring (or only, if delimiter is not found)
         result.push_back(str.substr(prev + 10));
     }
-
 }

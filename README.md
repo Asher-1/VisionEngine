@@ -42,6 +42,8 @@ https://github.com/nihui/opencv-mobile
 ### ![图片](./data/images/pose_result.jpg)
 ### segment result:
 ### ![图片](./data/images/segment_result.jpg)
+### ocr result:
+### ![图片](./data/images/ocr_result.jpg)
 
 # 7. Deploy:
 - [x] Linux deploy

@@ -36,6 +36,15 @@ namespace utility {
                  const cv::Scalar &fontColor = cv::Scalar(0, 0, 0),
                  const cv::Scalar &bkColor = cv::Scalar(255, 255, 255));
 
+    int DrawTextBoxes(cv::Mat &img_src, const std::vector<cv::Point> &textPoint,
+                      const cv::Scalar &lineColor = cv::Scalar(0, 255, 0), int thickness = 2);
+
+    int DrawOcrResults(cv::Mat &img_src, const std::vector<mirror::OCRResult> &ocrResults,
+                       const cv::Scalar &lineColor = cv::Scalar(0, 255, 0),
+                       const cv::Scalar &fontColor = cv::Scalar(0, 0, 0),
+                       const cv::Scalar &bkColor = cv::Scalar(255, 255, 255),
+                       double fontScale = 0.5, int thickness = 2);
+
     int DrawKeyPoints(cv::Mat &img_src, const std::vector<cv::Point2f> &keyPoints,
                       int radius = 2, const cv::Scalar &color = cv::Scalar(0, 255, 255),
                       int thickness = -1);

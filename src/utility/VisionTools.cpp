@@ -83,6 +83,31 @@ namespace utility {
         return std::max(y - 1, 0);
     }
 
+    int DrawTextBoxes(cv::Mat &img_src, const std::vector<cv::Point> &textPoint,
+                      const cv::Scalar &lineColor, int thickness) {
+        cv::RotatedRect textrect = cv::minAreaRect(textPoint);
+        cv::Point2f vertices[4];
+        textrect.points(vertices);
+        for (int i = 0; i < 4; i++) {
+            cv::line(img_src, vertices[i], vertices[(i + 1) % 4],
+                     lineColor, thickness);
+        }
+        //cv::polylines(srcmat, textpoint, true, cv::Scalar(0, 255, 0), 2);
+
+        return 0;
+    }
+
+    int DrawOcrResults(cv::Mat &img_src, const std::vector<mirror::OCRResult> &ocrResults,
+                       const cv::Scalar &lineColor,
+                       const cv::Scalar &fontColor,
+                       const cv::Scalar &bkColor,
+                       double fontScale, int thickness) {
+        for (const auto &ocrRes: ocrResults) {
+            DrawTextBoxes(img_src, ocrRes.boxes, lineColor, thickness);
+        }
+        return 0;
+    }
+
     int DrawKeyPoints(cv::Mat &img_src, const std::vector<cv::Point2f> &keyPoints,
                       int radius, const cv::Scalar &color, int thickness) {
         for (const auto &keypoint : keyPoints) {
@@ -246,5 +271,6 @@ namespace utility {
 
         return 0;
     }
+
 }
 

@@ -7,7 +7,9 @@
 #include <opencv2/imgproc.hpp>
 
 #if defined(_OPENMP)
+
 #include <omp.h>
+
 #endif
 
 #if defined(__ANDROID__)
@@ -92,6 +94,44 @@ namespace mirror {
 #endif
     };
 
+    // for ocr
+    struct TextBox {
+        float score;
+        std::vector<cv::Point> box;
+    };
+
+    struct OCRResult {
+        std::vector<cv::Point> boxes;
+        std::vector<std::string> predictions;
+        double boxScore;
+    };
+
+    enum TextDetectorType {
+        DB_NET = 0,
+    };
+
+    enum TextRecognizerType {
+        CRNN_NET = 0,
+    };
+
+    std::string GetTextDetectorTypeName(TextDetectorType type);
+
+    std::string GetTextRecognizerTypeName(TextRecognizerType type);
+
+    struct OcrEngineParams {
+        std::string modelPath;
+        bool gpuEnabled = false;
+        bool verbose = false;
+        int threadNum = 4;
+        float nmsThreshold = -1.0f;
+        float scoreThreshold = -1.0f;
+        TextDetectorType textDetectorType = TextDetectorType::DB_NET;
+        TextRecognizerType textRecognizerType = TextRecognizerType::CRNN_NET;
+#if defined __ANDROID__
+        AAssetManager* mgr = nullptr;
+#endif
+    };
+
     // for pose estimation
     enum PoseEstimationType {
         SIMPLE_POSE = 0,
@@ -118,7 +158,6 @@ namespace mirror {
         AAssetManager* mgr = nullptr;
 #endif
     };
-
 
     // for mask segmentation
     enum SegmentType {

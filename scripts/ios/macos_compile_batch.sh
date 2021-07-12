@@ -3,8 +3,8 @@
 INSTALL_DIR=visionEngine-macos-vulkan
 BUILD_DIR=build-macos
 NCNN_VULKAN=ON
+INSTALL_EXAMPLES=ON
 WITH_FULL_OPENCV=OFF
-INSTALL_EXAMPLES=OFF
 VULKAN_PATH="/Users/huang/Desktop/ncnn-20210525-full-source/vulkansdk-macos-1.2.162.0"
 NCNN_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/ncnn-20210525-macos-vulkan"
 OPENCV_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/opencv-mobile-4.5.1-macos"
