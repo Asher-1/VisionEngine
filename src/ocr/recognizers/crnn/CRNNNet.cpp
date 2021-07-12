@@ -161,7 +161,7 @@ namespace mirror {
 
 #if defined __ANDROID__
     int CRNNNet::loadModel(AAssetManager *mgr) {
-                if (!angleNet_) {
+        if (!angleNet_) {
             return ErrorCode::UNINITIALIZED_ERROR;
         }
 
