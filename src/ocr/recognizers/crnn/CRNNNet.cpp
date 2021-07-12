@@ -174,12 +174,12 @@ namespace mirror {
         std::string angle_path = "models" + modelPath_ + "/angles";
         std::string param_angle = angle_path + "/angle_op.param";
         std::string model_angle = angle_path + "/angle_op.bin";
-        if (angleNet_->load_param(param_angle.c_str()) == -1 ||
-            angleNet_->load_model(model_angle.c_str()) == -1) {
+        if (angleNet_->load_param(mgr, param_angle.c_str()) == -1 ||
+            angleNet_->load_model(mgr, model_angle.c_str()) == -1) {
             return ErrorCode::MODEL_LOAD_ERROR;
         }
 
-        std::string root_dir = "models" + modelPath_ + "/crnn";
+        std::string root_dir = "models" + modelPath_ + "/recognizers/crnn";
         std::string param_file = root_dir + "/crnn_lite_op.param";
         std::string model_file = root_dir + "/crnn_lite_op.bin";
         std::string label_file = root_dir + "/keys.txt";
