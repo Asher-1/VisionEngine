@@ -31,5 +31,5 @@ cmake -DMIRROR_BUILD_IOS=OFF -DCMAKE_BUILD_TYPE="Release" \
       -DMIRROR_BUILD_WITH_FULL_OPENCV=$WITH_FULL_OPENCV \
       -DNCNN_VULKAN=$NCNN_VULKAN ../../..
 
-cmake --build . -j$(nproc)
+cmake --build . -j4
 cmake --build . --target install

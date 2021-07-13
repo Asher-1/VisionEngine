@@ -55,5 +55,5 @@ else
         -DNCNN_VULKAN=$NCNN_VULKAN ../../..
 fi
 
-cmake --build . -j$(nproc)
+cmake --build . -j4
 cmake --build . --target install

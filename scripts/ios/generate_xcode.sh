@@ -54,6 +54,3 @@ else
         -DMIRROR_BUILD_WITH_FULL_OPENCV=$WITH_FULL_OPENCV \
         -DNCNN_VULKAN=$NCNN_VULKAN -G "Xcode" ../../..
 fi
-
-cmake --build . -j$(nproc)
-cmake --build . --target install

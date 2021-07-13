@@ -209,27 +209,54 @@ if (MIRROR_INSTALL_SDK)
 endif ()
 
 if (MIRROR_BUILD_EXAMPLES)
-    # face
-    add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.cpp)
-    target_link_libraries(face PRIVATE VisionEngine)
+    if (APPLE)
+        # face
+        add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.mm)
+        target_link_libraries(face PRIVATE VisionEngine)
 
-    # classification
-    add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.cpp)
-    target_link_libraries(classifier PRIVATE VisionEngine)
+        # classification
+        add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.mm)
+        target_link_libraries(classifier PRIVATE VisionEngine)
 
-    # object
-    add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.cpp)
-    target_link_libraries(object PRIVATE VisionEngine)
+        # object
+        add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.mm)
+        target_link_libraries(object PRIVATE VisionEngine)
 
-    # pose
-    add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.cpp)
-    target_link_libraries(pose PRIVATE VisionEngine)
+        # pose
+        add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.mm)
+        target_link_libraries(pose PRIVATE VisionEngine)
 
-    # segment
-    add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.cpp)
-    target_link_libraries(segment PRIVATE VisionEngine)
+        # segment
+        add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.mm)
+        target_link_libraries(segment PRIVATE VisionEngine)
 
-    # ocr
-    add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.cpp)
-    target_link_libraries(ocr PRIVATE VisionEngine)
+        # ocr
+        add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.mm)
+        target_link_libraries(ocr PRIVATE VisionEngine)
+    else ()
+        # face
+        add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.cpp)
+        target_link_libraries(face PRIVATE VisionEngine)
+
+        # classification
+        add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.cpp)
+        target_link_libraries(classifier PRIVATE VisionEngine)
+
+        # object
+        add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.cpp)
+        target_link_libraries(object PRIVATE VisionEngine)
+
+        # pose
+        add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.cpp)
+        target_link_libraries(pose PRIVATE VisionEngine)
+
+        # segment
+        add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.cpp)
+        target_link_libraries(segment PRIVATE VisionEngine)
+
+        # ocr
+        add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.cpp)
+        target_link_libraries(ocr PRIVATE VisionEngine)
+    endif ()
+
 endif ()
