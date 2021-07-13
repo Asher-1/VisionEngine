@@ -42,7 +42,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH/ios.toolchain.cmake \
       -DNCNN_VULKAN=$NCNN_VULKAN ../../..
 else
   cmake -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_PATH/ios.toolchain.cmake \
-        -DIOS_PLATFORM=OS64 -DIOS_ARCH="arm64;arm64e" \
+        -DIOS_PLATFORM=OS -DIOS_ARCH="armv7;arm64;arm64e" \
         -DENABLE_BITCODE=0 -DENABLE_ARC=0 -DENABLE_VISIBILITY=0 \
         -DOpenMP_C_FLAGS="-Xclang -fopenmp" -DOpenMP_CXX_FLAGS="-Xclang -fopenmp" \
         -DOpenMP_C_LIB_NAMES="libomp" -DOpenMP_CXX_LIB_NAMES="libomp" \

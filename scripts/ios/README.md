@@ -218,7 +218,7 @@ sed -e 's/__NAME__/glslang/g' -e 's/__IDENTIFIER__/org.khronos.glslang/g' -e 's/
 
 ## Compile visionEngine for ios
 ```
-Clone: git clone 
+Clone: git clone http://192.168.17.218:8080/tfs/DefaultCollection/Erow/_git/Cpp-VisionEigen
 ```
 # How to use
 ## 1. download the models from baiduyun: [baidu](https://pan.baidu.com/s/1WguBm9JBUDEszCEi3W7E0A)(code: 8mhn) 
