@@ -22,7 +22,7 @@ else ()
     set(OPENCV_PATH "${CMAKE_SOURCE_DIR}/lib/opencv-mobile-4.5.1-ubuntu-1804" CACHE PATH "Opencv root directory")
 endif ()
 
-if (MSVC)
+if (WIN32 AND NOT MIRROR_BUILD_ANDROID)
     message("windows")
     include_directories(${CMAKE_SOURCE_DIR}/include/win)
     link_directories(${CMAKE_SOURCE_DIR}/lib/win)
@@ -181,7 +181,7 @@ if (MIRROR_INSTALL_SDK)
                     ${PROJECT_BINARY_DIR}/src/classifier
                     DESTINATION ${PROJECT_BINARY_DIR}/bin
                     )
-        elseif (WIN32)
+        elseif (WIN32 AND NOT MIRROR_BUILD_ANDROID)
             install(FILES
                     ${PROJECT_BINARY_DIR}/src/ocr.exe
                     ${PROJECT_BINARY_DIR}/src/pose.exe
