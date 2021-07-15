@@ -20,8 +20,8 @@ int TestImages(int argc, char *argv[]) {
     SegmentEngineParams params;
     params.modelPath = model_root_path;
     params.gpuEnabled = use_gpu;
-//    params.segmentType = SegmentType::YOLACT_SEG;
-    params.segmentType = SegmentType::MOBILENETV3_SEG;
+    params.segmentType = SegmentType::YOLACT_SEG;
+    //params.segmentType = SegmentType::MOBILENETV3_SEG;
     seg_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());

@@ -8,7 +8,7 @@ if not exist %INSTALL_DIR% md %INSTALL_DIR%
 
 set NCNN_VULKAN=ON
 set INSTALL_EXAMPLES=ON
-set WITH_FULL_OPENCV=OFF
+set WITH_FULL_OPENCV=ON
 set NCNN_PATH="E:/ai/projects/VisionEngine/lib/ncnn-20210525-windows-vs2019"
 set OPENCV_PATH="E:/ai/projects/VisionEngine/lib/opencv-mobile-4.5.1-windows-vs2019"
 
