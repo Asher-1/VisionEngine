@@ -233,6 +233,8 @@ namespace mirror {
                 return "YOLACT_SEG";
             case MOBILENETV3_SEG:
                 return "MOBILENETV3_SEG";
+            default:
+                return "YOLACT_SEG";
         }
     }
 

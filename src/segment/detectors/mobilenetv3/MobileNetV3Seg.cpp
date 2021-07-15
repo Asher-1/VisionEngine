@@ -60,14 +60,16 @@ namespace mirror {
         int mask_h = maskout.h;
 
         cv::Mat prediction = cv::Mat::zeros(mask_h, mask_w, CV_8UC1);
-        ncnn::Mat chn[mask_c];
+        std::vector<ncnn::Mat> chn(mask_c);
         for (int i = 0; i < mask_c; i++) {
             chn[i] = maskout.channel(i);
         }
         for (int i = 0; i < mask_h; i++) {
-            const float *pChn[mask_c];
+            //const float *pChn[mask_c];
+            std::vector< std::vector<float> > pChn(mask_c);
             for (int c = 0; c < mask_c; c++) {
-                pChn[c] = chn[c].row(i);
+                pChn[c].insert(pChn[c].begin(), chn[c].row(i), chn[c].row(i) + mask_w);
+                //pChn[c] = chn[c].row(i);
             }
 
             auto *pCowMask = prediction.ptr<uchar>(i);

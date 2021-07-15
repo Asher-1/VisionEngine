@@ -25,7 +25,7 @@ namespace mirror {
                     max_index = j;
                 }
             }
-            if (max_index > 0 && (not(i > 0 && max_index == last_index))) {
+            if (max_index > 0 && !(i > 0 && max_index == last_index)) {
 //            std::cout <<  max_index - 1 << std::endl;
 //            std::string temp_str =  utf8_substr2(alphabetChinese,max_index - 1,1)  ;
                 str_res.push_back(alphabetChinese[max_index - 1]);

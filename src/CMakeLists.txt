@@ -22,30 +22,44 @@ else ()
     set(OPENCV_PATH "${CMAKE_SOURCE_DIR}/lib/opencv-mobile-4.5.1-ubuntu-1804" CACHE PATH "Opencv root directory")
 endif ()
 
-if (WIN32 AND NOT MIRROR_BUILD_ANDROID)
-    message("windows")
-    include_directories(${CMAKE_SOURCE_DIR}/include/win)
-    link_directories(${CMAKE_SOURCE_DIR}/lib/win)
-    target_link_libraries(VisionEngine PUBLIC opencv_world344 ncnn)
-else ()
-    if (MIRROR_BUILD_WITH_FULL_OPENCV)
-        find_package(OpenCV REQUIRED)
-        target_compile_definitions(VisionEngine PUBLIC MIRROR_BUILD_WITH_FULL_OPENCV)
-    else ()
-        if (MIRROR_BUILD_ANDROID)
-            set(OpenCV_DIR ${OPENCV_PATH}/sdk/native/jni/abi-${ANDROID_ABI})
-            find_package(OpenCV REQUIRED core imgproc highgui)
-        elseif (MIRROR_BUILD_IOS)
-            link_directories(${OPENCV_PATH})
-            include_directories(SYSTEM ${OPENCV_PATH})
-            include_directories(${OPENCV_PATH}/opencv2.framework)
-        else ()
-            set(OpenCV_DIR ${OPENCV_PATH}/lib/cmake/opencv4)
-            find_package(OpenCV REQUIRED core imgproc highgui)
-        endif ()
-    endif ()
-    message("Opencv Version: ${OPENCV_VERSION}")
+message("NCNN_PATH: ${NCNN_PATH}")
+message("OPENCV_PATH: ${OPENCV_PATH}")
 
+if (MIRROR_BUILD_WITH_FULL_OPENCV)
+	find_package(OpenCV REQUIRED)
+	target_compile_definitions(VisionEngine PUBLIC MIRROR_BUILD_WITH_FULL_OPENCV)
+else ()
+	if (WIN32 AND NOT MIRROR_BUILD_ANDROID)
+		include_directories(${CMAKE_SOURCE_DIR}/include/win)
+	elseif (MIRROR_BUILD_ANDROID)
+		set(OpenCV_DIR ${OPENCV_PATH}/sdk/native/jni/abi-${ANDROID_ABI})
+		find_package(OpenCV REQUIRED core imgproc highgui)
+	elseif (MIRROR_BUILD_IOS)
+		link_directories(${OPENCV_PATH})
+		include_directories(SYSTEM ${OPENCV_PATH})
+		include_directories(${OPENCV_PATH}/opencv2.framework)
+	else ()
+		set(OpenCV_DIR ${OPENCV_PATH}/lib/cmake/opencv4)
+		find_package(OpenCV REQUIRED core imgproc highgui)
+	endif ()
+endif ()
+message("Opencv Version: ${OPENCV_VERSION}")
+
+if (WIN32 AND NOT MIRROR_BUILD_ANDROID)
+	add_definitions(-D_USE_MATH_DEFINES)
+	include_directories(${NCNN_PATH}/x64/include)
+	set(ncnn_DIR ${NCNN_PATH}/x64/lib/cmake/ncnn)
+	find_package(ncnn REQUIRED)
+	target_link_libraries(VisionEngine PUBLIC ncnn)
+	
+	# all is full opencv feature
+	target_compile_definitions(VisionEngine PUBLIC MIRROR_BUILD_WITH_FULL_OPENCV)
+	if (MIRROR_BUILD_WITH_FULL_OPENCV)
+		target_link_libraries(VisionEngine PUBLIC ${OpenCV_LIBS})
+	else()
+		target_link_libraries(VisionEngine PUBLIC ${CMAKE_SOURCE_DIR}/lib/win/opencv_world344.lib)
+	endif()
+else ()
     if (MIRROR_BUILD_ANDROID)
         include_directories(${NCNN_PATH}/${ANDROID_ABI}/include)
         set(ncnn_DIR ${NCNN_PATH}/${ANDROID_ABI}/lib/cmake/ncnn)
@@ -183,12 +197,12 @@ if (MIRROR_INSTALL_SDK)
                     )
         elseif (WIN32 AND NOT MIRROR_BUILD_ANDROID)
             install(FILES
-                    ${PROJECT_BINARY_DIR}/src/ocr.exe
-                    ${PROJECT_BINARY_DIR}/src/pose.exe
-                    ${PROJECT_BINARY_DIR}/src/segment.exe
-                    ${PROJECT_BINARY_DIR}/src/face.exe
-                    ${PROJECT_BINARY_DIR}/src/object.exe
-                    ${PROJECT_BINARY_DIR}/src/classifier.exe
+                    ${PROJECT_BINARY_DIR}/src/$<CONFIG>/ocr.exe
+                    ${PROJECT_BINARY_DIR}/src/$<CONFIG>/pose.exe
+                    ${PROJECT_BINARY_DIR}/src/$<CONFIG>/segment.exe
+                    ${PROJECT_BINARY_DIR}/src/$<CONFIG>/face.exe
+                    ${PROJECT_BINARY_DIR}/src/$<CONFIG>/object.exe
+                    ${PROJECT_BINARY_DIR}/src/$<CONFIG>/classifier.exe
                     DESTINATION bin
                     )
         else ()
