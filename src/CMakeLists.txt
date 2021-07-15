@@ -163,11 +163,11 @@ if (MIRROR_INSTALL_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/pose/PoseEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/segment/SegmentEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/classifier/ClassifierEngine.h
-            DESTINATION ${PROJECT_BINARY_DIR}/include
+            DESTINATION include
             )
 
     # install library
-    install(TARGETS VisionEngine EXPORT VisionEngine ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib)
+    install(TARGETS VisionEngine EXPORT VisionEngine ARCHIVE DESTINATION lib)
 
     if (MIRROR_INSTALL_EXAMPLES)
         # install binaries
@@ -179,7 +179,7 @@ if (MIRROR_INSTALL_SDK)
                     ${PROJECT_BINARY_DIR}/src/face
                     ${PROJECT_BINARY_DIR}/src/object
                     ${PROJECT_BINARY_DIR}/src/classifier
-                    DESTINATION ${PROJECT_BINARY_DIR}/bin
+                    DESTINATION bin
                     )
         elseif (WIN32 AND NOT MIRROR_BUILD_ANDROID)
             install(FILES
@@ -189,7 +189,7 @@ if (MIRROR_INSTALL_SDK)
                     ${PROJECT_BINARY_DIR}/src/face.exe
                     ${PROJECT_BINARY_DIR}/src/object.exe
                     ${PROJECT_BINARY_DIR}/src/classifier.exe
-                    DESTINATION ${PROJECT_BINARY_DIR}/bin
+                    DESTINATION bin
                     )
         else ()
             #set_target_properties(VisionEngine PROPERTIES FRAMEWORK TRUE)
@@ -200,7 +200,7 @@ if (MIRROR_INSTALL_SDK)
                     ${PROJECT_BINARY_DIR}/src/face
                     ${PROJECT_BINARY_DIR}/src/object
                     ${PROJECT_BINARY_DIR}/src/classifier
-                    DESTINATION ${PROJECT_BINARY_DIR}/bin
+                    DESTINATION bin
                     )
         endif ()
     endif ()

@@ -1,6 +1,8 @@
 #!/bin/bash
 
-INSTALL_DIR=visionEngine-macos-vulkan
+INSTALL_DIR=$(pwd)/visionEngine-macos-vulkan
+mkdir -p $INSTALL_DIR
+
 BUILD_DIR=build-macos
 NCNN_VULKAN=ON
 INSTALL_EXAMPLES=ON
@@ -10,9 +12,5 @@ NCNN_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/ncnn-20210525-macos-vulkan"
 OPENCV_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/opencv-mobile-4.5.1-macos"
 
 echo 'Build macos!'
-sh compile_macos.sh $VULKAN_PATH $NCNN_PATH $OPENCV_PATH $NCNN_VULKAN $WITH_FULL_OPENCV $INSTALL_EXAMPLES
-mkdir -p $INSTALL_DIR
-cp -r $BUILD_DIR/include $INSTALL_DIR
-cp -r $BUILD_DIR/lib $INSTALL_DIR
-cp -r $BUILD_DIR/bin $INSTALL_DIR
+sh compile_macos.sh $VULKAN_PATH $NCNN_PATH $OPENCV_PATH $NCNN_VULKAN $WITH_FULL_OPENCV $INSTALL_EXAMPLES $INSTALL_DIR
 rm -rf $BUILD_DIR

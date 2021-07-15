@@ -1,15 +1,17 @@
 #!/bin/bash
 
-mkdir -p build-macos
-cd build-macos
+BUILD_DIR=build-macos
+mkdir -p $BUILD_DIR
+cd $BUILD_DIR
 
-if [ $# != 6 ]; then
+if [ $# != 7 ]; then
   NCNN_VULKAN=ON
   WITH_FULL_OPENCV=OFF
   INSTALL_EXAMPLES=OFF
   VULKAN_PATH="/Users/huang/Desktop/ncnn-20210525-full-source/vulkansdk-macos-1.2.162.0"
   NCNN_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/ncnn-20210525-macos-vulkan"
   OPENCV_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/opencv-mobile-4.5.1-macos"
+  INSTALL_DIR=$(pwd)/visionEngine-macos-vulkan
 else
   VULKAN_PATH="$1"
   NCNN_PATH="$2"
@@ -17,6 +19,7 @@ else
   NCNN_VULKAN="$4"
   WITH_FULL_OPENCV="$5"
   INSTALL_EXAMPLES="$6"
+  INSTALL_DIR="$7"
 fi
 
 echo "NCNN_PATH: $NCNN_PATH"
@@ -25,6 +28,7 @@ echo "OPENCV_PATH: $OPENCV_PATH"
 # vulkan is only available on arm64 devices
 cmake -DMIRROR_BUILD_IOS=OFF -DCMAKE_BUILD_TYPE="Release" \
       -DCMAKE_OSX_ARCHITECTURES="x86_64" \
+      -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
       -DMIRROR_INSTALL_EXAMPLES=$INSTALL_EXAMPLES \
       -DMIRROR_BUILD_EXAMPLES=ON -DVULKAN_PATH=$VULKAN_PATH \
       -DNCNN_PATH=$NCNN_PATH -DOPENCV_PATH=$OPENCV_PATH \

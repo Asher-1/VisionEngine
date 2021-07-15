@@ -1,6 +1,8 @@
 #!/bin/bash
 
-INSTALL_DIR=visionEngine-ios-vulkan
+INSTALL_DIR=$(pwd)/visionEngine-ios-vulkan
+mkdir -p $INSTALL_DIR
+
 BUILD_DIR=build-ios
 NCNN_VULKAN=ON
 WITH_FULL_OPENCV=OFF
@@ -12,8 +14,5 @@ NCNN_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/ncnn-20210525-ios-vulkan"
 OPENCV_PATH="/Users/huang/Desktop/Cpp-VisionEigen/lib/opencv-mobile-4.5.1-ios"
 
 echo 'Build ios!'
-sh compile_ios.sh $TOOLCHAIN_PATH $VULKAN_PATH $NCNN_PATH $OPENCV_PATH $NCNN_VULKAN $WITH_FULL_OPENCV $INSTALL_EXAMPLES $OPENMP_LIBRARY
-mkdir -p $INSTALL_DIR
-cp -r $BUILD_DIR/include $INSTALL_DIR
-cp -r $BUILD_DIR/lib $INSTALL_DIR
+sh compile_ios.sh $TOOLCHAIN_PATH $VULKAN_PATH $NCNN_PATH $OPENCV_PATH $NCNN_VULKAN $WITH_FULL_OPENCV $INSTALL_EXAMPLES $OPENMP_LIBRARY $INSTALL_DIR
 rm -rf $BUILD_DIR
