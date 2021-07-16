@@ -45,16 +45,17 @@ nmake install
 ```
 Clone: git clone http://192.168.17.218:8080/tfs/DefaultCollection/Erow/_git/Cpp-VisionEigen
 ```
+
 # How to use
 ## 1. download the models from baiduyun: [baidu](https://pan.baidu.com/s/1WguBm9JBUDEszCEi3W7E0A)(code: 8mhn) 
 ## 2. put models to directory: VisionEngine/data/models
 ## 3. https://github.com/Tencent/ncnn/releases
 * Download ncnn-YYYYMMDD-platform-vulkan.zip or build ncnn for your platform yourself
-* Extract ncnn-YYYYMMDD-platform-vulkan.zip into **lib/** and change the **NCNN_PATH** path to yours in **scripts/android/android_compile_batch.sh**
+* Extract ncnn-YYYYMMDD-platform-vulkan.zip into **lib/** and change the **NCNN_PATH** path to yours in **scripts/win/build_android.bat**
 ## 4. https://github.com/nihui/opencv-mobile
 * Download opencv-mobile-XYZ-platform.zip
-* Extract opencv-mobile-XYZ-platform.zip into **lib/** and change the **OPENCV_PATH** path to yours in **scripts/android/android_compile_batch.sh**
+* Extract opencv-mobile-XYZ-platform.zip into **lib/** and change the **OPENCV_PATH** path to yours in **scripts/win/build_android.bat**
 ## 5. compile the project and enjoy!
 ```
->> cd scripts/ios/ && ./ ios_compile_batch.sh
+>> cd scripts/win/ && build_android.bat
 ```

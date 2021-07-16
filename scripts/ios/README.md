@@ -231,5 +231,5 @@ Clone: git clone http://192.168.17.218:8080/tfs/DefaultCollection/Erow/_git/Cpp-
 * Extract opencv-mobile-XYZ-platform.zip into **lib/** and change the **OPENCV_PATH** path to yours in **scripts/android/android_compile_batch.sh**
 ## 5. compile the project and enjoy!
 ```
->> cd scripts/ios/ && ./ ios_compile_batch.sh
+>> cd scripts/ios/ && ./ios_compile_batch.sh
 ```

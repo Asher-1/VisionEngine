@@ -18,7 +18,7 @@ https://github.com/nihui/opencv-mobile
 * Extract opencv-mobile-XYZ-platform.zip into **lib/** and change the **OPENCV_PATH** path to yours in **scripts/android/android_compile_batch.sh**
 ## 5. compile the project and enjoy!
 ```
->> cd scripts/android/ && ./ android_compile_batch.sh
+>> cd scripts/android/ && ./android_compile_batch.sh
 ```
 
 ## some notes
