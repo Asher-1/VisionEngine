@@ -1,6 +1,5 @@
 
 #ifdef __APPLE__
-
 #define OBJECT_EXPORTS
 
 #include "VisionTools.h"
@@ -10,22 +9,26 @@
 
 using namespace mirror;
 
-static const bool use_gpu = false;
-const char *model_root_path = "../../data/models";
+static bool use_gpu = false;
+static std::string img_path = "../../data/images/cat.jpg";
+static std::string model_path = "../../data/models";
+static std::string result_path = "../../data/images/object_result.jpg";
+static ObjectDetectorType modelType = ObjectDetectorType::YOLOV4;
 
 int TestImages(int argc, char *argv[]) {
+    if (argc >= 2) {
+        result_path = "object_result.jpg";
+    }
+
     std::cout << "Image Object Detection Test......" << std::endl;
-    const char *img_path = "../../data/images/cat.jpg";
     cv::Mat img_src = cv::imread(img_path);
 
     mirror::ObjectEngine *object_engine = ObjectEngine::GetInstancePtr();
-
     ObjectEngineParams params;
-    params.modelPath = model_root_path;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.modeType = 2; // bugs: params.modeType = 0 and use_gpu=true;
-//	params.objectDetectorType = ObjectDetectorType::NANO_DET;
-//	params.objectDetectorType = ObjectDetectorType::YOLOV5;
+    params.objectDetectorType = modelType;
     object_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
@@ -39,7 +42,7 @@ int TestImages(int argc, char *argv[]) {
 
     utility::DrawObjects(img_src, objects);
 
-    cv::imwrite("../../data/images/object_result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -67,11 +70,10 @@ int TestVideos(int argc, char *argv[]) {
 
     mirror::ObjectEngine *object_engine = ObjectEngine::GetInstancePtr();
     ObjectEngineParams params;
-    params.modelPath = model_root_path;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.modeType = 2;
-//    params.objectDetectorType = ObjectDetectorType::NANO_DET;
-//	params.objectDetectorType = ObjectDetectorType::YOLOV5;
+    params.objectDetectorType = modelType;
     object_engine->loadModel(params);
 
     cv::Mat frame;
@@ -119,8 +121,23 @@ int TestVideos(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        model_path = argv[1];
+    } else if (argc == 3) {
+        model_path = argv[1];
+        img_path = argv[2];
+    } else if (argc == 4) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = ObjectDetectorType(std::stoi(argv[3]));
+    } else if (argc >= 5) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = ObjectDetectorType(std::stoi(argv[3]));
+        use_gpu = std::string(argv[4]) == "1" ? true : false;
+    }
+
     TestImages(argc, argv);
     TestVideos(argc, argv);
 }
-
 #endif // __APPLE__

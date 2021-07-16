@@ -30,8 +30,10 @@ https://github.com/nihui/opencv-mobile
 * FPS may be lower in dark environment because of longer camera exposure time
 
 ## 6. result
-### face result:
-### ![图片](./data/images/result.jpg)
+### face detector result:
+### ![图片](./data/images/detector_result.jpg)
+### face landmark result:
+### ![图片](./data/images/landmark_result.jpg)
 ### mask result:
 ### ![图片](./data/images/mask_result.jpg)
 ### object result:
@@ -53,8 +55,6 @@ https://github.com/nihui/opencv-mobile
 
 # 8. TODO:
 - [x] optimize the speed by using block strategy
-- [x] add yolo
-- [x] add pose
 - [x] refactor the project
 
 # 9. references

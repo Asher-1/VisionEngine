@@ -14,6 +14,7 @@ set OPENCV_PATH="E:/ai/projects/VisionEngine/lib/opencv-mobile-4.5.1-windows-vs2
 
 cmake -G "Visual Studio 15 2017" -A x64 ^
 	  -DCMAKE_BUILD_TYPE="Release" ^
+      -DCMAKE_CONFIGURATION_TYPES="Release" ^
       -DCMAKE_INSTALL_PREFIX=%cd%/%INSTALL_DIR% ^
       -DMIRROR_INSTALL_EXAMPLES=%INSTALL_EXAMPLES% ^
       -DNCNN_PATH=%NCNN_PATH% ^

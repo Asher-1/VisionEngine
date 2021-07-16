@@ -55,6 +55,9 @@ namespace mirror {
                     case MOBILENETV3_SEG:
                         segment_detector_ = MobileNetV3SegFactory().createDetector();
                         break;
+                    default:
+                        std::cout << "unsupported model type!." << std::endl;
+                        break;
                 }
 
                 if (!segment_detector_ || segment_detector_->load(params) != 0) {

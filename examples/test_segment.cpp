@@ -7,21 +7,26 @@
 
 using namespace mirror;
 
-static const bool use_gpu = true;
-const char *model_root_path = "../../data/models";
+static bool use_gpu = false;
+static std::string img_path = "../../data/images/playground.jpg";
+static std::string model_path = "../../data/models";
+static std::string result_path = "../../data/images/segment_result.jpg";
+static SegmentType modelType = SegmentType::YOLACT_SEG;
 
 int TestImages(int argc, char *argv[]) {
+    if (argc >= 2) {
+        result_path = "segment_result.jpg";
+    }
+
     std::cout << "Image Pose Detection Test......" << std::endl;
-    const char *img_path = "../../data/images/playground.jpg";
     cv::Mat img_src = cv::imread(img_path);
 
     SegmentEngine *seg_engine = SegmentEngine::GetInstancePtr();
 
     SegmentEngineParams params;
-    params.modelPath = model_root_path;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-    params.segmentType = SegmentType::YOLACT_SEG;
-    //params.segmentType = SegmentType::MOBILENETV3_SEG;
+    params.segmentType = modelType;
     seg_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
@@ -36,7 +41,7 @@ int TestImages(int argc, char *argv[]) {
 
     utility::DrawMask(img_src, segments, int(params.segmentType));
 
-    cv::imwrite("../../data/images/segment_result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -64,10 +69,9 @@ int TestVideos(int argc, char *argv[]) {
 
     SegmentEngine *seg_engine = SegmentEngine::GetInstancePtr();
     SegmentEngineParams params;
-    params.modelPath = model_root_path;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-    params.segmentType = SegmentType::YOLACT_SEG;
-//    params.segmentType = SegmentType::MOBILENETV3_SEG;
+    params.segmentType = modelType;
     seg_engine->loadModel(params);
 
     cv::Mat frame;
@@ -115,6 +119,22 @@ int TestVideos(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        model_path = argv[1];
+    } else if (argc == 3) {
+        model_path = argv[1];
+        img_path = argv[2];
+    } else if (argc == 4) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = SegmentType(std::stoi(argv[3]));
+    } else if (argc >= 5) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = SegmentType(std::stoi(argv[3]));
+        use_gpu = std::string(argv[4]) == "1" ? true : false;
+    }
+
     TestImages(argc, argv);
     TestVideos(argc, argv);
 }

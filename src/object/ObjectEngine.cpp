@@ -89,6 +89,9 @@ namespace mirror {
                     case MOBILENET_SSD:
                         object_detector_ = MobilenetSSDFactory().createDetector();
                         break;
+                    default:
+                        std::cout << "unsupported model type!." << std::endl;
+                        break;
                 }
 
                 if (!object_detector_ || object_detector_->load(params) != ErrorCode::SUCCESS) {

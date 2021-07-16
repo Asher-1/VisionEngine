@@ -57,6 +57,9 @@ namespace mirror {
                     case SQUEEZE_NET:
                         classifier_ = SqueezeNetFactory().createClassifier();
                         break;
+                    default:
+                        std::cout << "unsupported model type!." << std::endl;
+                        break;
                 }
 
                 if (!classifier_ || classifier_->load(params) != ErrorCode::SUCCESS) {

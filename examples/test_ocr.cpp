@@ -6,12 +6,17 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-static const bool use_gpu = true;
-const char *root_path = "../../data/models";
+using namespace mirror;
 
+static bool use_gpu = false;
+static std::string img_path = "../../data/images/idcard.jpg";
+static std::string model_path = "../../data/models";
+static std::string result_path = "../../data/images/ocr_result.jpg";
+static TextDetectorType detectorModelType = TextDetectorType::DB_NET;
+static TextRecognizerType recognizerModelType = TextRecognizerType::CRNN_NET;
 
-void printDetectionResult(const std::vector<mirror::OCRResult>& ocrResults) {
-        for (const auto &ocrRes: ocrResults) {
+void printDetectionResult(const std::vector<OCRResult> &ocrResults) {
+    for (const auto &ocrRes: ocrResults) {
         std::string jointStr;
         for (const auto &str: ocrRes.predictions) {
             jointStr += str;
@@ -21,21 +26,26 @@ void printDetectionResult(const std::vector<mirror::OCRResult>& ocrResults) {
 }
 
 int TestImages(int argc, char *argv[]) {
+    if (argc >= 2) {
+        result_path = "ocr_result.jpg";
+    }
+
     std::cout << "Image OCR Test......" << std::endl;
-    const char *img_path = "../../data/images/idcard.jpg";
     cv::Mat img_src = cv::imread(img_path);
 
-    mirror::OcrEngine *ocr_engine = mirror::OcrEngine::GetInstancePtr();
+    OcrEngine *ocr_engine = OcrEngine::GetInstancePtr();
 
-    mirror::OcrEngineParams params;
-    params.modelPath = root_path;
+    OcrEngineParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
+    params.textDetectorType = detectorModelType;
+    params.textRecognizerType = recognizerModelType;
     ocr_engine->loadModel(params);
     double start = static_cast<double>(cv::getTickCount());
-    std::vector<mirror::TextBox> textBoxes;
+    std::vector<TextBox> textBoxes;
     ocr_engine->detectText(img_src, textBoxes);
 
-    std::vector<mirror::OCRResult> ocrResults;
+    std::vector<OCRResult> ocrResults;
     ocr_engine->recognizeText(img_src, textBoxes, ocrResults);
 
     printDetectionResult(ocrResults);
@@ -45,7 +55,7 @@ int TestImages(int argc, char *argv[]) {
     std::cout << "time cost: " << time_cost << " ms." << std::endl;
 
     utility::DrawOcrResults(img_src, ocrResults);
-    cv::imwrite("../../data/images/ocr_result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -72,10 +82,12 @@ int TestVideos(int argc, char *argv[]) {
         return -1;
     }
 
-    mirror::OcrEngine *ocr_engine = mirror::OcrEngine::GetInstancePtr();
-    mirror::OcrEngineParams params;
-    params.modelPath = root_path;
+    OcrEngine *ocr_engine = OcrEngine::GetInstancePtr();
+    OcrEngineParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
+    params.textDetectorType = detectorModelType;
+    params.textRecognizerType = recognizerModelType;
     ocr_engine->loadModel(params);
 
     cv::Mat frame;
@@ -88,10 +100,10 @@ int TestVideos(int argc, char *argv[]) {
         double start = static_cast<double>(cv::getTickCount());
 
         // detect objects
-        std::vector<mirror::TextBox> textBoxes;
+        std::vector<TextBox> textBoxes;
         ocr_engine->detectText(frame, textBoxes);
 
-        std::vector<mirror::OCRResult> ocrResults;
+        std::vector<OCRResult> ocrResults;
         ocr_engine->recognizeText(frame, textBoxes, ocrResults);
         printDetectionResult(ocrResults);
         utility::DrawOcrResults(frame, ocrResults);
@@ -127,6 +139,28 @@ int TestVideos(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        model_path = argv[1];
+    } else if (argc == 3) {
+        model_path = argv[1];
+        img_path = argv[2];
+    } else if (argc == 4) {
+        model_path = argv[1];
+        img_path = argv[2];
+        detectorModelType = TextDetectorType(std::stoi(argv[3]));
+    } else if (argc == 5) {
+        model_path = argv[1];
+        img_path = argv[2];
+        detectorModelType = TextDetectorType(std::stoi(argv[3]));
+        recognizerModelType = TextRecognizerType(std::stoi(argv[4]));
+    } else if (argc >= 6) {
+        model_path = argv[1];
+        img_path = argv[2];
+        detectorModelType = TextDetectorType(std::stoi(argv[3]));
+        recognizerModelType = TextRecognizerType(std::stoi(argv[4]));
+        use_gpu = std::string(argv[5]) == "1" ? true : false;
+    }
+
     TestImages(argc, argv);
     TestVideos(argc, argv);
 }

@@ -7,20 +7,26 @@
 
 using namespace mirror;
 
-static const bool use_gpu = true;
-const char *model_root_path = "../../data/models";
+static bool use_gpu = false;
+static std::string img_path = "../../data/images/playground.jpg";
+static std::string model_path = "../../data/models";
+static std::string result_path = "../../data/images/pose_result.jpg";
+static PoseEstimationType modelType = PoseEstimationType::SIMPLE_POSE;
 
 int TestImages(int argc, char *argv[]) {
+    if (argc >= 2) {
+        result_path = "pose_result.jpg";
+    }
+
     std::cout << "Image Pose Detection Test......" << std::endl;
-    const char *img_path = "../../data/images/playground.jpg";
     cv::Mat img_src = cv::imread(img_path);
 
     mirror::PoseEngine *pose_engine = PoseEngine::GetInstancePtr();
 
     PoseEngineParams params;
-    params.modelPath = model_root_path;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-//	params.poseEstimationType = PoseEstimationType::LIGHT_OPEN_POSE;
+    params.poseEstimationType = modelType;
     pose_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
@@ -34,7 +40,7 @@ int TestImages(int argc, char *argv[]) {
 
     utility::DrawPoses(img_src, poses, pose_engine->getJointPairs());
 
-    cv::imwrite("../../data/images/pose_result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -62,9 +68,9 @@ int TestVideos(int argc, char *argv[]) {
 
     mirror::PoseEngine *pose_engine = PoseEngine::GetInstancePtr();
     PoseEngineParams params;
-    params.modelPath = model_root_path;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-//	params.poseEstimationType = PoseEstimationType::LIGHT_OPEN_POSE;
+    params.poseEstimationType = modelType;
     pose_engine->loadModel(params);
 
     cv::Mat frame;
@@ -112,6 +118,22 @@ int TestVideos(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        model_path = argv[1];
+    } else if (argc == 3) {
+        model_path = argv[1];
+        img_path = argv[2];
+    } else if (argc == 4) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = PoseEstimationType(std::stoi(argv[3]));
+    } else if (argc >= 5) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = PoseEstimationType(std::stoi(argv[3]));
+        use_gpu = std::string(argv[4]) == "1" ? true : false;
+    }
+
     TestImages(argc, argv);
     TestVideos(argc, argv);
 }

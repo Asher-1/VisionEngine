@@ -1,6 +1,5 @@
 
 #ifdef __APPLE__
-
 #define FACE_EXPORTS
 
 #include "FaceEngine.h"
@@ -11,22 +10,30 @@
 
 using namespace mirror;
 
-static const bool use_gpu = false;
 static const bool use_living = true;
-static const char *model_path = "../../data/models";
-
+static bool use_gpu = false;
+static std::string img_path = "../../data/images/4.jpg";
+static std::string model_path = "../../data/models";
+static FaceDetectorType detectorModelType = FaceDetectorType::RETINA_FACE;
+static FaceRecognizerType recognizerModelType = FaceRecognizerType::ARC_FACE;
 
 int TestDetector(int argc, char **argv) {
-    std::cout << "Face Detection Test......" << std::endl;
+    std::string result_path = "../../data/images/detector_result.jpg";
+    if (argc >= 2) {
+        result_path = "detector_result.jpg";
+    }
 
-    const char *img_file = "../../data/images/4.jpg";
-    cv::Mat img_src = cv::imread(img_file);
+    std::cout << "Face Detection Test......" << std::endl;
+    cv::Mat img_src = cv::imread(img_path);
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-//    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = false;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
     face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
@@ -39,7 +46,7 @@ int TestDetector(int argc, char **argv) {
     std::cout << "time cost: " << time_cost << "ms" << std::endl;
 
     utility::DrawFaces(img_src, faces, true);
-    cv::imwrite("../../data/images/result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -54,15 +61,23 @@ int TestDetector(int argc, char **argv) {
 }
 
 int TestLandmark(int argc, char *argv[]) {
+    std::string result_path = "../../data/images/landmark_result.jpg";
+    if (argc >= 2) {
+        result_path = "landmark_result.jpg";
+    }
+
     std::cout << "Face LandMark Test......" << std::endl;
-    const char *img_file = "../../data/images/4.jpg";
-    cv::Mat img_src = cv::imread(img_file);
+    cv::Mat img_src = cv::imread(img_path);
 
     FaceEngine *face_engine = FaceEngine::GetInstancePtr();
     FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceLandMarkerEnabled = true;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = false;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
     face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
@@ -81,7 +96,7 @@ int TestLandmark(int argc, char *argv[]) {
     double time_cost = (end - start) / cv::getTickFrequency() * 1000;
     std::cout << "time cost: " << time_cost << "ms" << std::endl;
 
-    cv::imwrite("../../images/result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -96,59 +111,9 @@ int TestLandmark(int argc, char *argv[]) {
 
 }
 
-int TestRecognize(int argc, char *argv[]) {
-    std::cout << "Face Recognition Test......" << std::endl;
-    const char *img_file = "../../data/images/4.jpg";
-    cv::Mat img_src = cv::imread(img_file);
-
-    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEngineParams params;
-    params.modelPath = model_path;
-    params.gpuEnabled = use_gpu;
-    face_engine->loadModel(params);
-
-    double start = static_cast<double>(cv::getTickCount());
-
-    std::vector<FaceInfo> faces;
-    face_engine->detectFace(img_src, faces);
-
-//    cv::Mat face1 = img_src(faces[0].location_).clone();
-//    cv::Mat face2 = img_src(faces[1].location_).clone();
-    cv::Mat face1;
-    cv::Mat face2;
-    std::vector<cv::Point2f> keyPoints;
-    ConvertKeyPoints(faces[0].keypoints_, 5, keyPoints);
-    face_engine->alignFace(img_src, keyPoints, face1);
-    ConvertKeyPoints(faces[1].keypoints_, 5, keyPoints);
-    face_engine->alignFace(img_src, keyPoints, face2);
-
-    std::vector<float> feature1, feature2;
-    face_engine->extractFeature(face1, feature1);
-    face_engine->extractFeature(face2, feature2);
-    float sim = CalculateSimilarity(feature1, feature2);
-
-    double end = static_cast<double>(cv::getTickCount());
-    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
-    std::cout << "time cost: " << time_cost << "ms" << std::endl;
-
-    for (int i = 0; i < static_cast<int>(faces.size()); ++i) {
-        cv::Rect face = faces.at(i).location_;
-        cv::rectangle(img_src, face, cv::Scalar(0, 255, 0), 2);
-    }
-    cv::imwrite("../../data/images/face1.jpg", face1);
-    cv::imwrite("../../data/images/face2.jpg", face2);
-    cv::imwrite("result.jpg", img_src);
-    std::cout << "similarity is: " << sim << std::endl;
-
-    face_engine->destroyEngine();
-    return 0;
-
-}
-
 int TestAlignFace(int argc, char *argv[]) {
     std::cout << "Face Alignment Test......" << std::endl;
-    const char *img_file = "../../data/images/4.jpg";
-    cv::Mat img_src = cv::imread(img_file);
+    cv::Mat img_src = cv::imread(img_path);
 
     const bool use_landmark = false;
 
@@ -157,6 +122,10 @@ int TestAlignFace(int argc, char *argv[]) {
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.faceLandMarkerEnabled = use_landmark;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = false;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
     face_engine->loadModel(params);
 
     double start = static_cast<double>(cv::getTickCount());
@@ -195,9 +164,119 @@ int TestAlignFace(int argc, char *argv[]) {
     return 0;
 }
 
+int TestMask(int argc, char *argv[]) {
+    std::string result_path = "../../data/images/mask_result.jpg";
+    if (argc >= 2) {
+        result_path = "mask_result.jpg";
+    }
+
+    std::cout << "Face Mask Test......" << std::endl;
+    const char *mask_file = "../../data/images/mask3.jpg";
+    cv::Mat img_src = cv::imread(mask_file);
+
+    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
+    FaceEngineParams params;
+    params.modelPath = model_path;
+    params.gpuEnabled = use_gpu;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = false;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
+    params.faceDetectorType = FaceDetectorType::ANTICOV_FACE;
+    face_engine->loadModel(params);
+
+    double start = static_cast<double>(cv::getTickCount());
+
+    std::vector<FaceInfo> faces;
+    face_engine->detectFace(img_src, faces);
+
+    double end = static_cast<double>(cv::getTickCount());
+    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
+    std::cout << "time cost: " << time_cost << "ms" << std::endl;
+
+    int num_face = static_cast<int>(faces.size());
+    for (int i = 0; i < num_face; ++i) {
+        char text[256];
+        if (faces[i].mask_) {
+            sprintf(text, "%s %.1f%%", "mask", faces[i].score_ * 100);
+            cv::rectangle(img_src, faces[i].location_, cv::Scalar(0, 255, 0), 2);
+        } else {
+            sprintf(text, "%s %.1f%%", "no mask", faces[i].score_ * 100);
+            cv::rectangle(img_src, faces[i].location_, cv::Scalar(0, 0, 255), 2);
+        }
+        utility::DrawText(img_src, faces[i].location_.tl(), text);
+    }
+    cv::imwrite(result_path, img_src);
+
+#if MIRROR_BUILD_WITH_FULL_OPENCV
+    cv::imshow("result", img_src);
+    cv::waitKey(0);
+#else
+    std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
+#endif
+
+    face_engine->destroyEngine();
+    return 0;
+}
+
+int TestRecognize(int argc, char *argv[]) {
+    std::string result_path1 = "../../data/images/face1.jpg";
+    std::string result_path2 = "../../data/images/face2.jpg";
+    if (argc >= 2) {
+        result_path1 = "face1.jpg";
+        result_path2 = "face2.jpg";
+    }
+
+    std::cout << "Face Recognition Test......" << std::endl;
+    cv::Mat img_src = cv::imread(img_path);
+
+    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
+    FaceEngineParams params;
+    params.modelPath = model_path;
+    params.gpuEnabled = use_gpu;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = true;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
+    face_engine->loadModel(params);
+
+    double start = static_cast<double>(cv::getTickCount());
+
+    std::vector<FaceInfo> faces;
+    face_engine->detectFace(img_src, faces);
+
+    cv::Mat face1;
+    cv::Mat face2;
+    std::vector<cv::Point2f> keyPoints;
+    ConvertKeyPoints(faces[0].keypoints_, 5, keyPoints);
+    face_engine->alignFace(img_src, keyPoints, face1);
+    ConvertKeyPoints(faces[1].keypoints_, 5, keyPoints);
+    face_engine->alignFace(img_src, keyPoints, face2);
+
+    std::vector<float> feature1, feature2;
+    face_engine->extractFeature(face1, feature1);
+    face_engine->extractFeature(face2, feature2);
+    float sim = CalculateSimilarity(feature1, feature2);
+
+    double end = static_cast<double>(cv::getTickCount());
+    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
+    std::cout << "time cost: " << time_cost << "ms" << std::endl;
+
+    for (int i = 0; i < static_cast<int>(faces.size()); ++i) {
+        cv::Rect face = faces.at(i).location_;
+        cv::rectangle(img_src, face, cv::Scalar(0, 255, 0), 2);
+    }
+    cv::imwrite(result_path1, face1);
+    cv::imwrite(result_path2, face2);
+    std::cout << "similarity is: " << sim << std::endl;
+
+    face_engine->destroyEngine();
+    return 0;
+
+}
+
 int TestDatabase(int argc, char *argv[]) {
     std::cout << "Face Database Test......" << std::endl;
-    const char *img_path = "../../data/images/asher.jpg";
     cv::Mat img_src = cv::imread(img_path);
     if (img_src.empty()) {
         std::cout << "load image failed." << std::endl;
@@ -210,7 +289,10 @@ int TestDatabase(int argc, char *argv[]) {
     FaceEngineParams params;
     params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
-//    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = true;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
     face_engine->loadModel(params);
     face_engine->Load();
     face_engine->Clear();
@@ -266,52 +348,6 @@ int TestDatabase(int argc, char *argv[]) {
     return 0;
 }
 
-int TestMask(int argc, char *argv[]) {
-    std::cout << "Face Mask Test......" << std::endl;
-    const char *img_file = "../../data/images/mask3.jpg";
-    cv::Mat img_src = cv::imread(img_file);
-
-    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEngineParams params;
-    params.modelPath = model_path;
-    params.gpuEnabled = use_gpu;
-    params.faceDetectorType = FaceDetectorType::ANTICOV_FACE;
-    face_engine->loadModel(params);
-
-    double start = static_cast<double>(cv::getTickCount());
-
-    std::vector<FaceInfo> faces;
-    face_engine->detectFace(img_src, faces);
-
-    double end = static_cast<double>(cv::getTickCount());
-    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
-    std::cout << "time cost: " << time_cost << "ms" << std::endl;
-
-    int num_face = static_cast<int>(faces.size());
-    for (int i = 0; i < num_face; ++i) {
-        char text[256];
-        if (faces[i].mask_) {
-            sprintf(text, "%s %.1f%%", "mask", faces[i].score_ * 100);
-            cv::rectangle(img_src, faces[i].location_, cv::Scalar(0, 255, 0), 2);
-        } else {
-            sprintf(text, "%s %.1f%%", "no mask", faces[i].score_ * 100);
-            cv::rectangle(img_src, faces[i].location_, cv::Scalar(0, 0, 255), 2);
-        }
-        utility::DrawText(img_src, faces[i].location_.tl(), text);
-    }
-    cv::imwrite("../../data/images/mask_result.jpg", img_src);
-
-#if MIRROR_BUILD_WITH_FULL_OPENCV
-    cv::imshow("result", img_src);
-    cv::waitKey(0);
-#else
-    std::cout << "Inorder to support visualization, please rebuild with full opencv support!" << std::endl;
-#endif
-
-    face_engine->destroyEngine();
-    return 0;
-}
-
 int TestTrack(int argc, char *argv[]) {
     std::cout << "Face Track Test......" << std::endl;
 
@@ -328,9 +364,11 @@ int TestTrack(int argc, char *argv[]) {
     params.threadNum = 4;
     params.gpuEnabled = use_gpu;
     params.livingThreshold = 0.915;
-//    params.faceDetectorType = FaceDetectorType::SCRFD_FACE;
     params.faceAntiSpoofingEnabled = use_living;
+    params.faceDetectorEnabled = true;
     params.faceRecognizerEnabled = true;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
     face_engine->loadModel(params);
     face_engine->Load();
 
@@ -440,14 +478,35 @@ int TestTrack(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        model_path = argv[1];
+    } else if (argc == 3) {
+        model_path = argv[1];
+        img_path = argv[2];
+    } else if (argc == 4) {
+        model_path = argv[1];
+        img_path = argv[2];
+        detectorModelType = FaceDetectorType(std::stoi(argv[3]));
+    } else if (argc == 5) {
+        model_path = argv[1];
+        img_path = argv[2];
+        detectorModelType = FaceDetectorType(std::stoi(argv[3]));
+        recognizerModelType = FaceRecognizerType(std::stoi(argv[4]));
+    } else if (argc >= 6) {
+        model_path = argv[1];
+        img_path = argv[2];
+        detectorModelType = FaceDetectorType(std::stoi(argv[3]));
+        recognizerModelType = FaceRecognizerType(std::stoi(argv[4]));
+        use_gpu = std::string(argv[5]) == "1" ? true : false;
+    }
+
     TestDetector(argc, argv);
     TestLandmark(argc, argv);
-    TestRecognize(argc, argv);
     TestAlignFace(argc, argv);
-    TestDatabase(argc, argv);
     TestMask(argc, argv);
+    TestRecognize(argc, argv);
+    TestDatabase(argc, argv);
     TestTrack(argc, argv);
     return 0;
 }
-
 #endif // __APPLE__

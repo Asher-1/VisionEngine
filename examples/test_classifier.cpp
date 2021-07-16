@@ -6,26 +6,32 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-static const bool use_gpu = true;
-const char *root_path = "../../data/models";
+using namespace mirror;
 
-
+static bool use_gpu = false;
+static std::string img_path = "../../data/images/dog.jpg";
+static std::string model_path = "../../data/models";
+static std::string result_path = "../../data/images/classify_result.jpg";
+static ClassifierType modelType = ClassifierType::MOBILE_NET;
 
 int TestImages(int argc, char *argv[]) {
+    if (argc >= 2) {
+        result_path = "classify_result.jpg";
+    }
+
     std::cout << "Image Classification Test......" << std::endl;
-    const char *img_path = "../../data/images/dog.jpg";
     cv::Mat img_src = cv::imread(img_path);
 
-    mirror::ClassifierEngine *classifier_engine = mirror::ClassifierEngine::GetInstancePtr();
+    ClassifierEngine *classifier_engine = ClassifierEngine::GetInstancePtr();
 
-    mirror::ClassifierEngineParams params;
-    params.modelPath = root_path;
+    ClassifierEngineParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.topK = 3;
-    params.classifierType = mirror::ClassifierType::SQUEEZE_NET;
+    params.classifierType = modelType;
     classifier_engine->loadModel(params);
     double start = static_cast<double>(cv::getTickCount());
-    std::vector<mirror::ImageInfo> images;
+    std::vector<ImageInfo> images;
     classifier_engine->classify(img_src, images);
 
     double end = static_cast<double>(cv::getTickCount());
@@ -33,7 +39,7 @@ int TestImages(int argc, char *argv[]) {
     std::cout << "time cost: " << time_cost << " ms." << std::endl;
 
     utility::DrawClassifications(img_src, images);
-    cv::imwrite("../../data/images/classify_result.jpg", img_src);
+    cv::imwrite(result_path, img_src);
 
 #if MIRROR_BUILD_WITH_FULL_OPENCV
     cv::imshow("result", img_src);
@@ -60,12 +66,12 @@ int TestVideos(int argc, char *argv[]) {
         return -1;
     }
 
-    mirror::ClassifierEngine *classifier_engine = mirror::ClassifierEngine::GetInstancePtr();
-    mirror::ClassifierEngineParams params;
-    params.modelPath = root_path;
+    ClassifierEngine *classifier_engine = ClassifierEngine::GetInstancePtr();
+    ClassifierEngineParams params;
+    params.modelPath = model_path;
     params.gpuEnabled = use_gpu;
     params.topK = 3;
-    params.classifierType = mirror::ClassifierType::SQUEEZE_NET;
+    params.classifierType = modelType;
     classifier_engine->loadModel(params);
 
     cv::Mat frame;
@@ -78,7 +84,7 @@ int TestVideos(int argc, char *argv[]) {
         double start = static_cast<double>(cv::getTickCount());
 
         // detect objects
-        std::vector<mirror::ImageInfo> images;
+        std::vector<ImageInfo> images;
         classifier_engine->classify(frame, images);
         utility::DrawClassifications(frame, images);
 
@@ -113,6 +119,22 @@ int TestVideos(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2) {
+        model_path = argv[1];
+    } else if (argc == 3) {
+        model_path = argv[1];
+        img_path = argv[2];
+    } else if (argc == 4) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = ClassifierType(std::stoi(argv[3]));
+    } else if (argc >= 5) {
+        model_path = argv[1];
+        img_path = argv[2];
+        modelType = ClassifierType(std::stoi(argv[3]));
+        use_gpu = std::string(argv[4]) == "1" ? true : false;
+    }
+
     TestImages(argc, argv);
     TestVideos(argc, argv);
 }

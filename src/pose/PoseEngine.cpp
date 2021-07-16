@@ -61,6 +61,9 @@ namespace mirror {
                     case LIGHT_OPEN_POSE:
                         pose_detector_ = LightOpenPoseFactory().createDetector();
                         break;
+                    default:
+                        std::cout << "unsupported model type!." << std::endl;
+                        break;
                 }
 
                 if (!pose_detector_ || pose_detector_->load(params) != ErrorCode::SUCCESS) {

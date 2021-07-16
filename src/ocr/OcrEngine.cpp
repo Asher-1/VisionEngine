@@ -66,7 +66,8 @@ namespace mirror {
                         detector_ = DBNetFactory().create();
                         break;
                     default:
-                        detector_ = DBNetFactory().create();
+                        std::cout << "unsupported model type!." << std::endl;
+                        break;
                 }
 
                 if (!detector_ || detector_->load(params) != ErrorCode::SUCCESS) {
@@ -95,7 +96,8 @@ namespace mirror {
                         recognizer_ = CRNNNetFactory().create();
                         break;
                     default:
-                        recognizer_ = CRNNNetFactory().create();
+                        std::cout << "unsupported model type!." << std::endl;
+                        break;
                 }
 
                 if (!recognizer_ || recognizer_->load(params) != ErrorCode::SUCCESS) {

@@ -95,7 +95,8 @@ namespace mirror {
                         detector_ = AnticovFactory().CreateDetector();
                         break;
                     default:
-                        detector_ = RetinafaceFactory().CreateDetector();
+                        std::cout << "unsupported face detector model type!." << std::endl;
+                        break;
                 }
 
                 if (!detector_ || detector_->load(params) != 0) {
@@ -123,7 +124,8 @@ namespace mirror {
                         recognizer_ = MobilefacenetRecognizerFactory().CreateRecognizer();
                         break;
                     default:
-                        recognizer_ = MobilefacenetRecognizerFactory().CreateRecognizer();
+                        std::cout << "unsupported face recognizer model type!." << std::endl;
+                        break;
                 }
 
                 if (!recognizer_ || recognizer_->load(params) != 0) {
@@ -152,7 +154,8 @@ namespace mirror {
                         faceAntiSpoofing_ = LiveDetectorFactory().CreateFaceAntiSpoofing();
                         break;
                     default:
-                        faceAntiSpoofing_ = LiveDetectorFactory().CreateFaceAntiSpoofing();
+                        std::cout << "unsupported face living detector model type!." << std::endl;
+                        break;
                 }
 
                 if (!faceAntiSpoofing_ || faceAntiSpoofing_->load(params) != 0) {
@@ -184,7 +187,8 @@ namespace mirror {
                         landmarker_ = ZQLandMarkerFactory().CreateLandmarker();
                         break;
                     default:
-                        landmarker_ = InsightfaceLandMarkerFactory().CreateLandmarker();
+                        std::cout << "unsupported face landmarker model type!." << std::endl;
+                        break;
                 }
 
                 if (!landmarker_ || landmarker_->load(params) != 0) {
