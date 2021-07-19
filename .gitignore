@@ -10,4 +10,5 @@ lib/ncnn*
 lib/opencv*
 scripts/android/visionEngine*
 scripts/linux/visionEngine*
+scripts/win/visionEngine*
 visionEngine-windows-*

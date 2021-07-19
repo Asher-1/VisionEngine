@@ -6,9 +6,10 @@ if not exist %INSTALL_DIR% md %INSTALL_DIR%
 
 set GENERATOR="Ninja"
 set ANDROID_PLATFORM="android-28"
-set NCNN_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/cpp/ncnn-20210525-android-vulkan"
-set OPENCV_PATH="/media/yons/data/develop/git/ncnn/ncnn-android-visionEngine/app/src/main/cpp/opencv-mobile-4.5.1-android"
-set ANDROID_NDK="/media/yons/data/develop/Android/Sdk/ndk/21.4.7075529"
+set CMAKE_PATH=D:/develop/tools/AndroidStudioSDK/cmake/3.18.1
+set ANDROID_NDK="D:/develop/tools/AndroidStudioSDK/ndk/22.1.7171670"
+set NCNN_PATH="E:/ai/projects/VisionEngine/lib/ncnn-20210525-android-vulkan"
+set OPENCV_PATH="E:/ai/projects/VisionEngine/lib/opencv-mobile-4.5.1-android"
 
 :: -------------------armeabi-v7a--------------------
 set ANDROID_ABI=armeabi-v7a
@@ -57,6 +58,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ^
       -DCMAKE_CONFIGURATION_TYPES="Release" ^
       -DCMAKE_INSTALL_PREFIX="%ROOT_PATH%/%INSTALL_DIR%/%ANDROID_ABI%" ^
       -DCMAKE_GENERATOR=%GENERATOR% ^
+      -DCMAKE_MAKE_PROGRAM="%CMAKE_PATH%/bin/Ninja.exe" ^
       -DCMAKE_TOOLCHAIN_FILE="%ANDROID_NDK%/build/cmake/android.toolchain.cmake" ^
       -DANDROID_NDK=%ANDROID_NDK% ^
       -DANDROID_ABI=%ANDROID_ABI% ^
@@ -66,7 +68,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ^
       -DOPENCV_PATH=%OPENCV_PATH% ^
       -DMIRROR_BUILD_WITH_FULL_OPENCV=OFF ^
       -DNCNN_VULKAN=ON ../../..
-Ninja
-Ninja install
+"%CMAKE_PATH%/bin/Ninja"
+"%CMAKE_PATH%/bin/Ninja" install
 echo "Build android %ANDROID_ABI% successfully!"
 goto:eof
