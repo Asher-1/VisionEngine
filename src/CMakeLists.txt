@@ -83,7 +83,6 @@ else ()
         message(STATUS "CMAKE_FRAMEWORK_PATH: " ${CMAKE_FRAMEWORK_PATH})
         set_target_properties(VisionEngine PROPERTIES
                 LINK_FLAGS "-Wl,-F${NCNN_PATH} -F${OPENCV_PATH}")
-        #target_link_libraries(VisionEngine PUBLIC "-framework Foundation -framework UIKit")
         target_link_libraries(VisionEngine PUBLIC "-framework opencv2 -framework ncnn -framework glslang -framework openmp")
     else ()
         find_package(ncnn REQUIRED)
@@ -178,35 +177,11 @@ if (MIRROR_INSTALL_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/classifier/ClassifierEngine.h)
 
     if (MIRROR_BUILD_IOS)
-        set(RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/ios/README.md)
-        set_target_properties(VisionEngine PROPERTIES
-                FRAMEWORK TRUE
-                FRAMEWORK_VERSION A
-                MACOSX_BUNDLE TRUE
-                MACOSX_FRAMEWORK_IDENTIFIER cn.asher.VisionEngine
-                MACOSX_FRAMEWORK_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
-                BUILD_WITH_INSTALL_RPATH TRUE
-                # "current version" in semantic format in Mach-O binary file
-                VERSION 1.0.0
-                # "compatibility version" in semantic format in Mach-O binary file
-                SOVERSION 1.0.0
-                # PUBLIC_HEADER "${PUBLIC_HEADER_FILES}"
-                RESOURCE "${RESOURCE_FILES}"
-                OUTPUT_NAME VisionEngine
-                # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
-                )
-    endif ()
-
-    if (MIRROR_BUILD_IOS)
-        foreach (hfile ${PUBLIC_HEADER_FILES})
-            string(FIND ${hfile} "/" pos REVERSE)  # 得出最后一个"/"的位置pos
-            string(SUBSTRING ${hfile} 0 ${pos} dir)
-            message(STATUS "subDir: ${dir}")
-            # MACOSX_PACKAGE_LOCATION关键字可以将文件复制到特定的路径中，在IOS framework中，
-            # 就是<name>.framework/
-            set_property(SOURCE ${hfile} PROPERTY
-                    MACOSX_PACKAGE_LOCATION Headers/${dir})
-        endforeach (hfile)
+        # install header files
+        install(FILES ${PUBLIC_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Headers/)
+        # install library
+        install(TARGETS VisionEngine EXPORT VisionEngine ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX} RENAME visionengine)
+        install_ext( FILES ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist "${CMAKE_INSTALL_PREFIX}/Resources" "" )
     else ()
         # install header files
         install(FILES ${PUBLIC_HEADER_FILES} DESTINATION include)
