@@ -105,6 +105,27 @@ if (MIRROR_OPENMP AND OpenMP_CXX_FOUND)
     endif ()
 endif ()
 
+# Extended 'install' command depending on the build configuration and OS
+# 4 arguments:
+#   - ARGV0 = signature
+#   - ARGV1 = target (warning: one project or one file at a time)
+#   - ARGV2 = base install destination (_debug or _withDebInfo will be automatically appended if multi-conf is supported)
+#   - ARGV3 = install destination suffix (optional)
+function( install_ext )
+	if( APPLE )
+		install( ${ARGV0} ${ARGV1} DESTINATION ${ARGV2}${ARGV3} )
+		return()
+	endif()
+
+	if( NOT CMAKE_CONFIGURATION_TYPES )
+		install( ${ARGV0} ${ARGV1} DESTINATION ${ARGV2}${ARGV3} )
+	else()
+		install( ${ARGV0} ${ARGV1} CONFIGURATIONS Release DESTINATION ${ARGV2}${ARGV3} )
+		install( ${ARGV0} ${ARGV1} CONFIGURATIONS RelWithDebInfo DESTINATION ${ARGV2}_withDebInfo${ARGV3} )
+		install( ${ARGV0} ${ARGV1} CONFIGURATIONS Debug DESTINATION ${ARGV2}_debug${ARGV3} )
+	endif()
+endfunction()
+
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
