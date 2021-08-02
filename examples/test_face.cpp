@@ -570,12 +570,12 @@ int main(int argc, char *argv[]) {
         use_gpu = std::string(argv[5]) == "1" ? true : false;
     }
 
-//    TestDetector(argc, argv);
-//    TestLandmark(argc, argv);
-//    TestAlignFace(argc, argv);
-//    TestMask(argc, argv);
-//    TestRecognize(argc, argv);
-//    TestDatabase(argc, argv);
+    TestDetector(argc, argv);
+    TestLandmark(argc, argv);
+    TestAlignFace(argc, argv);
+    TestMask(argc, argv);
+    TestRecognize(argc, argv);
+    TestDatabase(argc, argv);
     TestFaceApi(argc, argv);
     TestTrack(argc, argv);
     return 0;
