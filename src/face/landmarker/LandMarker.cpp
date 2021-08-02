@@ -107,7 +107,7 @@ namespace mirror {
         return flag;
     }
 
-    int LandMarker::extract(const cv::Mat &img_src, const cv::Rect &face,
+    int LandMarker::extract(const cv::Mat &img_src, const cv::Rect &box,
                             std::vector<cv::Point2f> &keypoints) const {
         keypoints.clear();
         if (!initialized_) {
@@ -117,7 +117,7 @@ namespace mirror {
             return ErrorCode::UNINITIALIZED_ERROR;
         }
 
-        if (img_src.empty() || face.empty()) {
+        if (img_src.empty() || box.empty()) {
             std::cout << "input empty." << std::endl;
             return ErrorCode::EMPTY_INPUT_ERROR;
         }
@@ -126,7 +126,7 @@ namespace mirror {
             std::cout << "start extract keypoints." << std::endl;
         }
 
-        int flag = this->extractKeypoints(img_src, face, keypoints);
+        int flag = this->extractKeypoints(img_src, box, keypoints);
 
         if (flag != 0) {
             std::cout << "extract failed." << std::endl;

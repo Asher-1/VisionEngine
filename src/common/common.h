@@ -35,6 +35,7 @@ namespace mirror {
         const int DIMENSION_MISS_MATCH_ERROR = 10005;
         const int NOT_FOUND_ERROR = 10006;
         const int EMPTY_DATA_ERROR = 10007;
+        const int DATABASE_UPDATE_ERROR = 10008;
     }
 
 
@@ -225,15 +226,20 @@ namespace mirror {
         float sim_;
     };
 
+    struct VerificationResult {
+        std::string name;
+        float sim;
+    };
+
     struct FaceEngineParams {
-        std::string modelPath;
-        std::string faceFeaturePath;
+        std::string modelPath; // model path
+        std::string faceFeaturePath; // registered face database path
         bool gpuEnabled = false;
         bool verbose = false;
         int threadNum = 4;
-        float nmsThreshold = -1.0f;
-        float scoreThreshold = -1.0f;
-        float livingThreshold = -1.0f;
+        float nmsThreshold = -1.0f; // face detection thresh
+        float scoreThreshold = -1.0f; // face detection thresh
+        float livingThreshold = -1.0f; // living detection thresh
         bool faceDetectorEnabled = true;
         bool faceRecognizerEnabled = true;
         bool faceAntiSpoofingEnabled = false;
