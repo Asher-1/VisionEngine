@@ -7,6 +7,8 @@ vs2017
 vs2019
 .idea
 .vscode
+*.zip
+*.7z
 lib/ncnn*
 lib/opencv*
 scripts/android/visionEngine*
