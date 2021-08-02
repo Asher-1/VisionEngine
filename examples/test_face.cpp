@@ -346,6 +346,80 @@ int TestDatabase(int argc, char *argv[]) {
     return 0;
 }
 
+int TestFaceApi(int argc, char *argv[]) {
+    std::cout << "Face API Test......" << std::endl;
+    cv::Mat img_src = cv::imread(img_path);
+    if (img_src.empty()) {
+        std::cout << "load image failed." << std::endl;
+        return 10001;
+    }
+
+    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
+    FaceEngineParams params;
+    params.modelPath = model_path;
+    params.gpuEnabled = use_gpu;
+    params.livingThreshold = 0.915;
+    params.faceDetectorEnabled = true;
+    params.faceRecognizerEnabled = true;
+    params.faceAntiSpoofingEnabled = true;
+    params.faceDetectorType = detectorModelType;
+    params.faceRecognizerType = recognizerModelType;
+    face_engine->loadModel(params);
+    if (face_engine->registerFace(img_src, "test") == 0) {
+        std::cout << "Register face " << "'test'" << "successfully!" << std::endl;
+    } else {
+        std::cout << "Register face " << "'test'" << "failed!" << std::endl;
+    }
+    double start = static_cast<double>(cv::getTickCount());
+
+    bool is_living = true;
+    float livingScore = 0.0f;
+    VerificationResult result;
+    { //  just test
+        is_living = face_engine->detectLivingFace(img_src, livingScore);
+        face_engine->verifyFace(img_src, result, true);
+    }
+
+    // 1. detect faces
+    std::vector<FaceInfo> faces;
+    face_engine->detectFace(img_src, faces);
+    if (faces.empty()) {
+        std::cout << "Cannot detect any face!" << std::endl;
+        return -1;
+    }
+
+    // 2. detect living face
+    FaceInfo face_info = faces[0];
+    is_living = face_engine->detectLivingFace(img_src, face_info.location_, livingScore);
+
+    // 3. verify face
+    if (is_living) {
+        std::cout << "Detect real face!" << std::endl;
+        std::vector<cv::Point2f> keyPoints;
+        ConvertKeyPoints(face_info.keypoints_, 5, keyPoints);
+        int flag = face_engine->verifyFace(img_src, keyPoints, result);
+        if (flag == 0) {
+            if (result.sim > 0.5) {
+                std::cout << "Verification successfully and similarity is : " << result.sim << std::endl;
+            } else {
+                std::cout << "Verification failed and similarity is : " << result.sim << std::endl;
+            }
+        } else {
+            std::cout << "ErrorCode is :" << flag << std::endl;
+        }
+
+    } else {
+        std::cout << "Detect fake face!" << std::endl;
+    }
+
+    double end = static_cast<double>(cv::getTickCount());
+    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
+    std::cout << "time cost: " << time_cost << "ms" << std::endl;
+
+    face_engine->destroyEngine();
+}
+
+
 int TestTrack(int argc, char *argv[]) {
     std::cout << "Face Track Test......" << std::endl;
 
@@ -473,78 +547,6 @@ int TestTrack(int argc, char *argv[]) {
 #endif
 
     return 0;
-}
-
-int TestFaceApi(int argc, char *argv[]) {
-    std::cout << "Face API Test......" << std::endl;
-    cv::Mat img_src = cv::imread(img_path);
-    if (img_src.empty()) {
-        std::cout << "load image failed." << std::endl;
-        return 10001;
-    }
-
-    FaceEngine *face_engine = FaceEngine::GetInstancePtr();
-    FaceEngineParams params;
-    params.modelPath = model_path;
-    params.gpuEnabled = use_gpu;
-    params.faceDetectorEnabled = true;
-    params.faceRecognizerEnabled = true;
-    params.faceAntiSpoofingEnabled = true;
-    params.faceDetectorType = detectorModelType;
-    params.faceRecognizerType = recognizerModelType;
-    face_engine->loadModel(params);
-    if (face_engine->registerFace(img_src, "test") == 0) {
-        std::cout << "Register face " << "'test'" << "successfully!" << std::endl;
-    } else {
-        std::cout << "Register face " << "'test'" << "failed!" << std::endl;
-    }
-    double start = static_cast<double>(cv::getTickCount());
-
-    bool is_living = true;
-    float livingScore = 0.0f;
-    VerificationResult result;
-    { //  just test
-        is_living = face_engine->detectLivingFace(img_src, livingScore);
-        face_engine->verifyFace(img_src, result, true);
-    }
-
-    // 1. detect faces
-    std::vector<FaceInfo> faces;
-    face_engine->detectFace(img_src, faces);
-    if (faces.empty()) {
-        std::cout << "Cannot detect any face!" << std::endl;
-        return -1;
-    }
-
-    // 2. detect living face
-    FaceInfo face_info = faces[0];
-    is_living = face_engine->detectLivingFace(img_src, face_info.location_, livingScore);
-
-    // 3. verify face
-    if (is_living) {
-        std::cout << "Detect real face!" << std::endl;
-        std::vector<cv::Point2f> keyPoints;
-        ConvertKeyPoints(face_info.keypoints_, 5, keyPoints);
-        int flag = face_engine->verifyFace(img_src, keyPoints, result);
-        if (flag == 0) {
-            if (result.sim > 0.5) {
-                std::cout << "Verification successfully and similarity is : " << result.sim << std::endl;
-            } else {
-                std::cout << "Verification failed and similarity is : " << result.sim << std::endl;
-            }
-        } else {
-            std::cout << "ErrorCode is :" << flag << std::endl;
-        }
-
-    } else {
-        std::cout << "Detect fake face!" << std::endl;
-    }
-
-    double end = static_cast<double>(cv::getTickCount());
-    double time_cost = (end - start) / cv::getTickFrequency() * 1000;
-    std::cout << "time cost: " << time_cost << "ms" << std::endl;
-
-    face_engine->destroyEngine();
 }
 
 int main(int argc, char *argv[]) {
