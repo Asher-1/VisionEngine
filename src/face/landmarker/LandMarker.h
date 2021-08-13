@@ -18,7 +18,7 @@ namespace mirror {
         int load(const FaceEngineParams &params);
         int update(const FaceEngineParams &params);
 
-        int extract(const cv::Mat &img_src, const cv::Rect &face, std::vector<cv::Point2f> &keypoints) const;
+        int extract(const cv::Mat &img_src, const cv::Rect &box, std::vector<cv::Point2f> &keypoints) const;
 
         inline FaceLandMarkerType getType() const { return type_; }
 
@@ -33,7 +33,7 @@ namespace mirror {
 
         virtual int loadModel(const char *root_path) = 0;
 
-        virtual int extractKeypoints(const cv::Mat &img_src, const cv::Rect &face,
+        virtual int extractKeypoints(const cv::Mat &img_src, const cv::Rect &box,
                                      std::vector<cv::Point2f> &keypoints) const = 0;
 
     protected:

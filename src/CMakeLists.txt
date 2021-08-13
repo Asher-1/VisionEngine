@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-message(${SRC_FILES})
+message(STATUS ${SRC_FILES})
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_STANDARD 11)
@@ -12,7 +12,7 @@ else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -fPIC -std=c++11")
 endif ()
 
-add_library(VisionEngine STATIC ${SRC_FILES})
+add_library(${PROJECT_NAME} STATIC ${SRC_FILES})
 
 if (MIRROR_BUILD_ANDROID)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
@@ -32,12 +32,12 @@ else ()
     endif ()
 endif ()
 
-message("NCNN_PATH: ${NCNN_PATH}")
-message("OPENCV_PATH: ${OPENCV_PATH}")
+message(STATUS "NCNN_PATH: ${NCNN_PATH}")
+message(STATUS "OPENCV_PATH: ${OPENCV_PATH}")
 
 if (MIRROR_BUILD_WITH_FULL_OPENCV)
     find_package(OpenCV REQUIRED)
-    target_compile_definitions(VisionEngine PUBLIC MIRROR_BUILD_WITH_FULL_OPENCV)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC MIRROR_BUILD_WITH_FULL_OPENCV)
 else ()
     if (WIN32 AND NOT MIRROR_BUILD_ANDROID)
         set(OpenCV_DIR ${OPENCV_PATH}/x64/x64/vc16/staticlib)
@@ -46,70 +46,87 @@ else ()
         set(OpenCV_DIR ${OPENCV_PATH}/sdk/native/jni/abi-${ANDROID_ABI})
         find_package(OpenCV REQUIRED core imgproc highgui)
     elseif (MIRROR_BUILD_IOS)
-        link_directories(${OPENCV_PATH})
-        include_directories(SYSTEM ${OPENCV_PATH})
-        include_directories(${OPENCV_PATH}/opencv2.framework)
+        include_directories(SYSTEM ${OPENCV_PATH}/opencv2.framework)
     else ()
         set(OpenCV_DIR ${OPENCV_PATH}/lib/cmake/opencv4)
         find_package(OpenCV REQUIRED core imgproc highgui)
     endif ()
 endif ()
-message("Opencv Version: ${OPENCV_VERSION}")
+message(STATUS "Opencv Version: ${OPENCV_VERSION}")
 
 if (WIN32 AND NOT MIRROR_BUILD_ANDROID)
     add_definitions(-D_USE_MATH_DEFINES)
     include_directories(${NCNN_PATH}/x64/include)
     set(ncnn_DIR ${NCNN_PATH}/x64/lib/cmake/ncnn)
     find_package(ncnn REQUIRED)
-    target_link_libraries(VisionEngine PUBLIC ncnn ${OpenCV_LIBS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ncnn ${OpenCV_LIBS})
 else ()
     if (MIRROR_BUILD_ANDROID)
         include_directories(${NCNN_PATH}/${ANDROID_ABI}/include)
         set(ncnn_DIR ${NCNN_PATH}/${ANDROID_ABI}/lib/cmake/ncnn)
     elseif (MIRROR_BUILD_IOS)
-        link_directories(${NCNN_PATH})
-        include_directories(SYSTEM ${NCNN_PATH})
-        include_directories(${VULKAN_PATH}/MoltenVK/include)
-        include_directories(${NCNN_PATH}/glslang.framework)
-        include_directories(${NCNN_PATH}/openmp.framework)
-        include_directories(${NCNN_PATH}/ncnn.framework/Headers)
+        include_directories(${NCNN_PATH})
+        include_directories(SYSTEM ${VULKAN_PATH}/MoltenVK/include)
+        include_directories(SYSTEM ${NCNN_PATH}/ncnn.framework)
+        include_directories(SYSTEM ${NCNN_PATH}/ncnn.framework/Headers)
+        include_directories(SYSTEM ${NCNN_PATH}/glslang.framework)
+        include_directories(SYSTEM ${NCNN_PATH}/openmp.framework)
     else ()
         include_directories(${NCNN_PATH}/include)
         set(ncnn_DIR ${NCNN_PATH}/lib/cmake/ncnn)
     endif ()
 
     if (MIRROR_BUILD_IOS)
+        set_xcode_property(${PROJECT_NAME} GCC_GENERATE_DEBUGGING_SYMBOLS YES "All")
         set(CMAKE_FRAMEWORK_PATH "${CMAKE_FRAMEWORK_PATH} ${NCNN_PATH} ${OPENCV_PATH}")
-        set(CMAKE_SYSTEM_FRAMEWORK_PATH "${CMAKE_SYSTEM_FRAMEWORK_PATH} ${NCNN_PATH} ${OPENCV_PATH}")
-        message("CMAKE_SYSTEM_FRAMEWORK_PATH: " ${CMAKE_SYSTEM_FRAMEWORK_PATH})
-        set_target_properties(VisionEngine PROPERTIES
-                LINK_FLAGS "-Wl,-F${NCNN_PATH}/ncnn.framework -F${NCNN_PATH}/openmp.framework -F${NCNN_PATH}/glslang.framework"
-                FRAMEWORK_SEARCH_PATHS ${NCNN_PATH})
-        set_target_properties(VisionEngine PROPERTIES
-                LINK_FLAGS "-Wl,-F${OPENCV_PATH}/opencv2.framework"
-                FRAMEWORK_SEARCH_PATHS ${OPENCV_PATH})
+        add_definitions(-F ${CMAKE_FRAMEWORK_PATH})
+        message(STATUS "CMAKE_FRAMEWORK_PATH: " ${CMAKE_FRAMEWORK_PATH})
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                LINK_FLAGS "-Wl,-F${NCNN_PATH} -F${OPENCV_PATH}")
+        target_link_libraries(${PROJECT_NAME} PUBLIC "-framework opencv2 -framework ncnn -framework glslang -framework openmp")
     else ()
         find_package(ncnn REQUIRED)
-        target_link_libraries(VisionEngine PUBLIC ncnn ${OpenCV_LIBS})
+        target_link_libraries(${PROJECT_NAME} PUBLIC ncnn ${OpenCV_LIBS})
     endif ()
 endif ()
 
 if (MIRROR_OPENMP)
     find_package(OpenMP)
     if (NOT TARGET OpenMP::OpenMP_CXX AND (OpenMP_CXX_FOUND OR OPENMP_FOUND))
-        target_compile_options(VisionEngine PRIVATE ${OpenMP_CXX_FLAGS})
+        target_compile_options(${PROJECT_NAME} PRIVATE ${OpenMP_CXX_FLAGS})
     endif ()
 endif ()
 
 if (MIRROR_OPENMP AND OpenMP_CXX_FOUND)
-    message("Building with OpenMP")
-    target_link_libraries(VisionEngine PUBLIC OpenMP::OpenMP_CXX)
+    message(STATUS "Building with OpenMP")
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
     if (NOT MIRROR_BUILD_IOS AND NOT WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
     endif ()
 endif ()
 
-target_include_directories(VisionEngine
+# Extended 'install' command depending on the build configuration and OS
+# 4 arguments:
+#   - ARGV0 = signature
+#   - ARGV1 = target (warning: one project or one file at a time)
+#   - ARGV2 = base install destination (_debug or _withDebInfo will be automatically appended if multi-conf is supported)
+#   - ARGV3 = install destination suffix (optional)
+function( install_ext )
+	if( APPLE )
+		install( ${ARGV0} ${ARGV1} DESTINATION ${ARGV2}${ARGV3} )
+		return()
+	endif()
+
+	if( NOT CMAKE_CONFIGURATION_TYPES )
+		install( ${ARGV0} ${ARGV1} DESTINATION ${ARGV2}${ARGV3} )
+	else()
+		install( ${ARGV0} ${ARGV1} CONFIGURATIONS Release DESTINATION ${ARGV2}${ARGV3} )
+		install( ${ARGV0} ${ARGV1} CONFIGURATIONS RelWithDebInfo DESTINATION ${ARGV2}_withDebInfo${ARGV3} )
+		install( ${ARGV0} ${ARGV1} CONFIGURATIONS Debug DESTINATION ${ARGV2}_debug${ARGV3} )
+	endif()
+endfunction()
+
+target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
         $<INSTALL_INTERFACE:include/vision>
@@ -170,8 +187,7 @@ target_include_directories(VisionEngine
         )
 
 if (MIRROR_INSTALL_SDK)
-    # install head files
-    install(FILES
+    set(PUBLIC_HEADER_FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/common/common.h
             ${CMAKE_CURRENT_SOURCE_DIR}/utility/VisionTools.h
             ${CMAKE_CURRENT_SOURCE_DIR}/ocr/OcrEngine.h
@@ -179,12 +195,25 @@ if (MIRROR_INSTALL_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/object/ObjectEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/pose/PoseEngine.h
             ${CMAKE_CURRENT_SOURCE_DIR}/segment/SegmentEngine.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/classifier/ClassifierEngine.h
-            DESTINATION include
-            )
+            ${CMAKE_CURRENT_SOURCE_DIR}/classifier/ClassifierEngine.h)
 
-    # install library
-    install(TARGETS VisionEngine EXPORT VisionEngine ARCHIVE DESTINATION lib)
+    if (MIRROR_BUILD_IOS)
+        # install header files
+        install(FILES ${PUBLIC_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/Headers/)
+        # install library
+        set(installed_library_filename
+                ${CMAKE_BINARY_DIR}/src/${CMAKE_STATIC_LIBRARY_PREFIX}${PROJECT_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
+        install(FILES ${installed_library_filename}
+                DESTINATION ${CMAKE_INSTALL_PREFIX}
+                RENAME visionengine
+                )
+        install_ext(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist "${CMAKE_INSTALL_PREFIX}/Resources" "")
+    else ()
+        # install header files
+        install(FILES ${PUBLIC_HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
+        # install library
+        install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME} ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+    endif ()
 
     if (MIRROR_INSTALL_EXAMPLES)
         # install binaries
@@ -209,7 +238,6 @@ if (MIRROR_INSTALL_SDK)
                     DESTINATION bin
                     )
         else ()
-            #set_target_properties(VisionEngine PROPERTIES FRAMEWORK TRUE)
             install(FILES
                     ${PROJECT_BINARY_DIR}/src/ocr
                     ${PROJECT_BINARY_DIR}/src/pose
@@ -226,54 +254,28 @@ if (MIRROR_INSTALL_SDK)
 endif ()
 
 if (MIRROR_BUILD_EXAMPLES)
-    if (APPLE)
-        # face
-        add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.mm)
-        target_link_libraries(face PRIVATE VisionEngine)
+    # face
+    add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.cpp)
+    target_link_libraries(face PRIVATE ${PROJECT_NAME})
 
-        # classification
-        add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.mm)
-        target_link_libraries(classifier PRIVATE VisionEngine)
+    # classification
+    add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.cpp)
+    target_link_libraries(classifier PRIVATE ${PROJECT_NAME})
 
-        # object
-        add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.mm)
-        target_link_libraries(object PRIVATE VisionEngine)
+    # object
+    add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.cpp)
+    target_link_libraries(object PRIVATE ${PROJECT_NAME})
 
-        # pose
-        add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.mm)
-        target_link_libraries(pose PRIVATE VisionEngine)
+    # pose
+    add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.cpp)
+    target_link_libraries(pose PRIVATE ${PROJECT_NAME})
 
-        # segment
-        add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.mm)
-        target_link_libraries(segment PRIVATE VisionEngine)
+    # segment
+    add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.cpp)
+    target_link_libraries(segment PRIVATE ${PROJECT_NAME})
 
-        # ocr
-        add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.mm)
-        target_link_libraries(ocr PRIVATE VisionEngine)
-    else ()
-        # face
-        add_executable(face ${CMAKE_SOURCE_DIR}/examples/test_face.cpp)
-        target_link_libraries(face PRIVATE VisionEngine)
-
-        # classification
-        add_executable(classifier ${CMAKE_SOURCE_DIR}/examples/test_classifier.cpp)
-        target_link_libraries(classifier PRIVATE VisionEngine)
-
-        # object
-        add_executable(object ${CMAKE_SOURCE_DIR}/examples/test_object.cpp)
-        target_link_libraries(object PRIVATE VisionEngine)
-
-        # pose
-        add_executable(pose ${CMAKE_SOURCE_DIR}/examples/test_pose.cpp)
-        target_link_libraries(pose PRIVATE VisionEngine)
-
-        # segment
-        add_executable(segment ${CMAKE_SOURCE_DIR}/examples/test_segment.cpp)
-        target_link_libraries(segment PRIVATE VisionEngine)
-
-        # ocr
-        add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.cpp)
-        target_link_libraries(ocr PRIVATE VisionEngine)
-    endif ()
+    # ocr
+    add_executable(ocr ${CMAKE_SOURCE_DIR}/examples/test_ocr.cpp)
+    target_link_libraries(ocr PRIVATE ${PROJECT_NAME})
 
 endif ()

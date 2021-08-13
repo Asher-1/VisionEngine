@@ -106,6 +106,8 @@ namespace mirror {
             std::cout << "Clear face database successfully." << std::endl;
         }
 
+        bool IsEmpty() const { return db_.empty(); }
+
         static float CalculateSimilarity(const std::vector<float> &feat1, const std::vector<float> &feat2) {
             double dot = 0;
             double norm1 = 0;
@@ -213,6 +215,10 @@ namespace mirror {
 
     void FaceDatabase::Clear() {
         impl_->Clear();
+    }
+
+    bool FaceDatabase::IsEmpty() const {
+        impl_->IsEmpty();
     }
 
     int FaceDatabase::Find(std::vector<std::string> &names) const {

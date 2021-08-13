@@ -18,6 +18,7 @@ public:
 	~FaceDatabase();
 
 	void Clear();
+	bool IsEmpty() const;
 	int Load(const char* path);
 	int Save(const char* path) const;
 	int Delete(const std::string& name);
