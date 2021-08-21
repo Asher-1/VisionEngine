@@ -218,7 +218,7 @@ namespace mirror {
     }
 
     bool FaceDatabase::IsEmpty() const {
-        impl_->IsEmpty();
+        return impl_->IsEmpty();
     }
 
     int FaceDatabase::Find(std::vector<std::string> &names) const {
